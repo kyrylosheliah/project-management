@@ -5,6 +5,21 @@ Frontend tech stack: Vite React, TanStack Query, React Hook Form, Zod, JavaScrip
 
 ## Run
 
+`backend/.env` file:
+```
+NESTJS_PORT=3000
+PG_HOST=localhost
+PG_PORT=5433
+PG_USERNAME=postgres
+PG_PASSWORD=password
+PG_NAME=ProjectManagement
+```
+
+`frontend/.env` file:
+```
+VITE_PORT=5000
+```
+
 ```
 npm run start
 ```
