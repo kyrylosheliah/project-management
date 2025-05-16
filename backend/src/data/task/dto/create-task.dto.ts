@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNotEmpty, IsOptional } from "class-validator";
-import { TaskStatus } from "src/data/task/entity";
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { TaskStatus } from "src/data/task/task.entity";
 
 export class CreateTaskDto {
   @ApiProperty()
@@ -8,6 +8,7 @@ export class CreateTaskDto {
   title: string;
 
   @ApiProperty({ required: false })
+  @IsString()
   @IsOptional()
   description?: string;
 
@@ -17,7 +18,7 @@ export class CreateTaskDto {
 
   @ApiProperty()
   @IsOptional()
-  assignedToId?: number;
+  userId?: number;
 
   @ApiProperty({ enum: TaskStatus, required: false })
   @IsOptional()

@@ -1,5 +1,5 @@
-import { Project } from "src/data/project/entity";
-import { User } from "src/data/user/entity";
+import { Project } from "src/data/project/project.entity";
+import { User } from "src/data/user/user.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 export enum TaskStatus {

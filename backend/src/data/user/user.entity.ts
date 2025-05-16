@@ -1,5 +1,5 @@
-import { Project } from "src/data/project/entity";
-import { Task } from "src/data/task/entity";
+import { Project } from "src/data/project/project.entity";
+import { Task } from "src/data/task/task.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
