@@ -1,7 +1,7 @@
 # Project Management Web App
 
-Tech stack: NestJS, Vite React, PostgreSQL
-Details: TypeORM, class-validator, TanStack Query, React Hook Form, Zod, JavaScript Fetch API
+Backend tech stack: PostgreSQL, NestJS, TypeORM, class-validator
+Frontend tech stack: Vite React, TanStack Query, React Hook Form, Zod, JavaScript Fetch API
 
 ## Run
 
@@ -27,6 +27,7 @@ Must:
 - Update task status feature
 
 Could:
+- Set DB connection string and ports with environment variables
 - @nestjs/swagger docs
 - @nestjs/jwt auth
 - TanStack Query params for pagination and filtering
