@@ -1,10 +1,10 @@
-import { DataSource } from "typeorm";
+import { DataSource, DataSourceOptions } from "typeorm";
 import 'dotenv/config';
 import { User } from "./data/user/user.entity";
 import { Project } from "./data/project/project.entity";
 import { Task } from "./data/task/task.entity";
 
-export const AppDataSource = new DataSource({
+export const databaseOptions = {
   type: 'postgres',
   host: process.env.PG_HOST || 'localhost',
   port: process.env.PG_PORT ? parseInt(process.env.PG_PORT, 10) : 5433,
@@ -12,9 +12,13 @@ export const AppDataSource = new DataSource({
   password: process.env.PG_PASSWORD || "password",
   database: process.env.PG_NAME || "ProjectManagement",
   entities: [ User, Project, Task ],
-  migrations: [ 'src/migrations/*.ts' ],
   synchronize: false,
   logging: false,
+};
+
+export const AppDataSource = new DataSource({
+  ...databaseOptions as any,
+  migrations: [ 'src/migrations/*.ts' ],
 });
 
 // // Migrations

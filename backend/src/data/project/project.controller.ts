@@ -1,4 +1,5 @@
-import { Controller } from "@nestjs/common";
+import { Body, Controller, Param, Post, Put } from "@nestjs/common";
+import { ApiBody, ApiExtraModels } from "@nestjs/swagger";
 import { BaseCrudController } from "src/common/base-crud/base-crud.controller";
 import { CreateProjectDto } from "src/data/project/dto/create-project.dto";
 import { UpdateProjectDto } from "src/data/project/dto/update-project.dto";
@@ -6,12 +7,21 @@ import { Project } from "src/data/project/project.entity";
 import { ProjectService } from "src/data/project/project.service";
 
 @Controller('project')
-export class ProjectController extends BaseCrudController<
-  Project,
-  CreateProjectDto,
-  UpdateProjectDto
-> {
+@ApiExtraModels(CreateProjectDto, UpdateProjectDto)
+export class ProjectController extends BaseCrudController<Project> {
   constructor(private readonly projectService: ProjectService) {
     super(projectService);
+  }
+
+  @Post()
+  @ApiBody({ type: CreateProjectDto })
+  override create(@Body() createDto: CreateProjectDto) {
+    return super.create(createDto);
+  }
+
+  @Put(':id')
+  @ApiBody({ type: UpdateProjectDto })
+  override update(@Param('id') id: number, @Body() updateDto: UpdateProjectDto) {
+    return super.update(id, updateDto);
   }
 }

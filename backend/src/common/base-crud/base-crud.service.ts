@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { DeepPartial, Repository } from "typeorm";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 
-//@Injectable()
-export class BaseCrudService<T> {
+export abstract class BaseCrudService<T> {
   constructor(protected readonly repository: Repository<T>) {}
 
   async findAll(): Promise<T[]> {

@@ -3,15 +3,24 @@ import { User } from "src/data/user/user.entity";
 import { UserService } from "src/data/user/user.service";
 import { CreateUserDto } from "src/data/user/user/create-user.dto";
 import { UpdateUserDto } from "src/data/user/user/update-user.dto";
-import { Controller } from "@nestjs/common";
+import { Body, Controller, Param, Post, Put } from "@nestjs/common";
+import { ApiBody } from "@nestjs/swagger";
 
 @Controller('user')
-export class UserController extends BaseCrudController<
-  User,
-  CreateUserDto,
-  UpdateUserDto
-> {
+export class UserController extends BaseCrudController<User> {
   constructor(private readonly userService: UserService) {
     super(userService);
+  }
+
+  @Post()
+  @ApiBody({ type: CreateUserDto })
+  override create(@Body() createDto: CreateUserDto) {
+    return super.create(createDto);
+  }
+
+  @Put(':id')
+  @ApiBody({ type: UpdateUserDto })
+  override update(@Param('id') id: number, @Body() updateDto: UpdateUserDto) {
+    return super.update(id, updateDto);
   }
 }

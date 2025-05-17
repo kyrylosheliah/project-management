@@ -6,7 +6,10 @@ import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class TaskService extends BaseCrudService<Task> {
-  constructor(@InjectRepository(Task) repository: Repository<Task>) {
+  constructor(
+    @InjectRepository(Task)
+    protected repository: Repository<Task>,
+  ) {
     super(repository);
   }
 }
