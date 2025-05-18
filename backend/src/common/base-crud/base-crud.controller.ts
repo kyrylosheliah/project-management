@@ -1,20 +1,20 @@
 import { Body, Delete, Get, Param, Post, Put } from "@nestjs/common";
-import { ApiBody } from "@nestjs/swagger";
 import { BaseCrudService } from "src/common/base-crud/base-crud.service";
+import { SearchEntitiesDto } from "src/common/base-crud/dto/search-entity.dto";
 import { DeepPartial } from "typeorm";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 
 export abstract class BaseCrudController<T> {
   constructor(protected readonly service: BaseCrudService<T>) {}
 
-  @Get()
-  findAll() {
-    return this.service.findAll();
+  @Post('search')
+  search(@Body() req: SearchEntitiesDto) {
+    return this.service.search(req);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.service.findOne(id);
+  get(@Param('id') id: number) {
+    return this.service.get(id);
   }
 
   // Note: override with correct CreateSomeEntityDto

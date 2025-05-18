@@ -8,7 +8,7 @@ import { Injectable } from "@nestjs/common";
 export class TaskService extends BaseCrudService<Task> {
   constructor(
     @InjectRepository(Task)
-    protected repository: Repository<Task>,
+    protected readonly repository: Repository<Task>,
   ) {
     super(repository);
   }
