@@ -12,6 +12,11 @@ export abstract class BaseCrudController<T> {
     return this.service.search(req);
   }
 
+  @Get("all")
+  getAll() {
+    return this.service.getAll();
+  }
+
   @Get(':id')
   get(@Param('id') id: number) {
     return this.service.get(id);

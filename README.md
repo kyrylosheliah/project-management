@@ -49,3 +49,6 @@ Could:
 - Decorators for role-based access control
 - docker-compose deployment
 - CI pipeline
+
+Exploration:
+- Project-wide schema defined via OpenAPI Specification

@@ -45,6 +45,10 @@ export abstract class BaseCrudService<T> {
     };
   }
 
+  async getAll(): Promise<T[]> {
+    return this.repository.find();
+  }
+
   async get(id: number): Promise<T> {
     // TODO: status 500 "Internal server error" when an entity wasn't found
     return this.repository.findOneOrFail({ where: { id } as any });

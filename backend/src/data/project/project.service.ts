@@ -6,9 +6,6 @@ import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class ProjectService extends BaseCrudService<Project> {
-  //constructor(private dataSource: DataSource) {
-  //  super(dataSource.getRepository(Project));
-  //}
   constructor(
     @InjectRepository(Project)
     protected readonly projectRepository: Repository<Project>,

@@ -1,0 +1,9 @@
+import { z } from "zod";
+
+export const ProjectSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  ownerId: z.number({ required_error: "OwnerIsRequired" }),
+});
+
+export type ProjectFormValues = z.infer<typeof ProjectSchema>;
