@@ -4,9 +4,10 @@ import { TaskService } from "src/data/task/task.service";
 import { UpdateTaskDto } from "src/data/task/dto/update-task.dto";
 import { CreateTaskDto } from "src/data/task/dto/create-task.dto";
 import { Body, Controller, Param, Post, Put } from "@nestjs/common";
-import { ApiBody } from "@nestjs/swagger";
+import { ApiBody, ApiExtraModels } from "@nestjs/swagger";
 
 @Controller('task')
+@ApiExtraModels(CreateTaskDto, UpdateTaskDto)
 export class TaskController extends BaseCrudController<Task> {
   constructor(private readonly taskService: TaskService) {
     super(taskService);

@@ -16,6 +16,6 @@ export class User {
   @OneToMany(() => Project, p => p.owner)
   projects: Project[];
 
-  @OneToMany(() => Task, t => t.assignedTo)
+  @OneToMany(() => Task, t => t.assignee)
   tasks: Task[];
 }

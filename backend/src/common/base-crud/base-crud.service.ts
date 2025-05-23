@@ -21,16 +21,16 @@ export abstract class BaseCrudService<T> {
     if (req.criteria !== null) {
       criteria = {};
       for (const [column, criterion] of Object.entries(req.criteria)) {
-        // validate `column: keyof T`
+        // TODO: validate `column: keyof T`
         if (criterion !== "") {
-          //criteria[column] = Like(`%${criterion}%`);
+          // TODO: criteria[column] = Like(`%${criterion}%`);
           criteria[column] = criterion;
         }
       }
     }
     // ordering
     const toOrder: any = {
-      // validate `orderByColumn: keyof T`
+      // TODO: validate `orderByColumn: keyof T`
       [req.orderByColumn]: req.ascending ? 'ASC' : 'DESC',
     }
     // commence query
@@ -50,7 +50,7 @@ export abstract class BaseCrudService<T> {
   }
 
   async get(id: number): Promise<T> {
-    // TODO: status 500 "Internal server error" when an entity wasn't found
+    // ERROR: status 500 "Internal server error" when an entity wasn't found
     return this.repository.findOneOrFail({ where: { id } as any });
   }
 

@@ -18,7 +18,7 @@ export class CreateTaskDto {
 
   @ApiProperty()
   @IsOptional()
-  userId?: number;
+  assigneeId?: number;
 
   @ApiProperty({ enum: TaskStatus, required: false })
   @IsOptional()

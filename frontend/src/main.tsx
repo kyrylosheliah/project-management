@@ -1,7 +1,9 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@unocss/reset/tailwind.css';
+import './index.css';
+import 'virtual:uno.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';

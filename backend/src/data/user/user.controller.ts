@@ -4,9 +4,10 @@ import { UserService } from "src/data/user/user.service";
 import { CreateUserDto } from "src/data/user/user/create-user.dto";
 import { UpdateUserDto } from "src/data/user/user/update-user.dto";
 import { Body, Controller, Param, Post, Put } from "@nestjs/common";
-import { ApiBody } from "@nestjs/swagger";
+import { ApiBody, ApiExtraModels } from "@nestjs/swagger";
 
 @Controller('user')
+@ApiExtraModels(CreateUserDto, UpdateUserDto)
 export class UserController extends BaseCrudController<User> {
   constructor(private readonly userService: UserService) {
     super(userService);
