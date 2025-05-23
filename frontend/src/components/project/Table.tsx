@@ -4,7 +4,8 @@ import { type Project } from "../../models/project/type";
 import { useEffect, useState } from "react";
 import { projectMetadata } from "../../models/project/metadata";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import ButtonText from "../ButtonText";
 
 export const ProjectTable: React.FC = () => {
   const {
@@ -15,6 +16,8 @@ export const ProjectTable: React.FC = () => {
     queryFn: fetchAllProjects,
   });
   const projects = data ?? [];
+
+  const navigate = useNavigate();
 
   useEffect(()=>{
     console.log(data);
@@ -56,12 +59,9 @@ export const ProjectTable: React.FC = () => {
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="mb-4 p-2 border rounded w-full max-w-sm"
         />
-        <button
-          disabled={isPending}
-          className="bg-blue-600 text-white text-nowrap px-4 py-2 rounded disabled:opacity-50"
-        >
+        <ButtonText disabled={isPending}>
           {isPending ? "Creating..." : "New Project"}
-        </button>
+        </ButtonText>
       </div>
 
       {isPending ? (
@@ -103,12 +103,15 @@ export const ProjectTable: React.FC = () => {
                     </td>
                   ))}
                   <td>
-                    <Link
-                      to={`/project/${row.original.id}`}
-                      className="contents"
+                    <ButtonText
+                      onClick={() =>
+                        navigate({
+                          to: `/project/${row.original.id}`,
+                        })
+                      }
                     >
                       Open
-                    </Link>
+                    </ButtonText>
                   </td>
                 </tr>
               ))}
@@ -120,24 +123,22 @@ export const ProjectTable: React.FC = () => {
       )}
 
       <div className="flex justify-between items-center mt-4">
-        <button
+        <ButtonText
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
-          className="px-3 py-1 border rounded disabled:opacity-50"
         >
           Previous
-        </button>
+        </ButtonText>
         <span>
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </span>
-        <button
+        <ButtonText
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
-          className="px-3 py-1 border rounded disabled:opacity-50"
         >
           Next
-        </button>
+        </ButtonText>
       </div>
     </div>
   );

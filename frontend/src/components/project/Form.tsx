@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateProject } from "../../models/project/service";
 import { projectMetadata } from "../../models/project/metadata";
+import ButtonText from "../ButtonText";
 
 export const ProjectForm: React.FC<{
   edit?: boolean;
@@ -71,18 +72,18 @@ export const ProjectForm: React.FC<{
             );
           })}
           <div className="flex flex-row justify-between items-center">
-            <button
+            <ButtonText
               onClick={() => form.reset()}
-              className="self-end mt-4 px-3 py-2 text-gray-600 hover:text-black hover:underline"
+              className="self-end"
             >
               Reset
-            </button>
-            <button
+            </ButtonText>
+            <ButtonText
               type="submit"
-              className="self-end mt-4 px-3 py-2 text-gray-600 hover:text-black hover:underline"
+              className="self-end"
             >
               Apply
-            </button>
+            </ButtonText>
           </div>
         </form>
       ) : (

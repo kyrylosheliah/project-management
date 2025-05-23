@@ -3,6 +3,8 @@ import { deleteProject, fetchProject } from "../../models/project/service";
 import { ProjectForm } from "./Form";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import TextButton from "../ButtonText";
+import ButtonDangerText from "../ButtonDangerText";
 
 export const ProjectInfo: React.FC<{
   projectId: string;
@@ -26,26 +28,17 @@ export const ProjectInfo: React.FC<{
         ) : (
           <>
             <div className="mb-4 w-full flex items-center justify-between">
-              <button
-                onClick={() => router.history.back()}
-                className="items-center p-1 rounded-lg text-gray-600 hover:underline hover:text-black"
-              >
+              <TextButton onClick={() => router.history.back()}>
                 ← Back
-              </button>
+              </TextButton>
               {edit ? (
-                <button
-                  onClick={() => setEdit(false)}
-                  className="items-center p-1 rounded-lg text-gray-600 hover:underline hover:text-black"
-                >
+                <TextButton onClick={() => setEdit(false)}>
                   Close edit
-                </button>
+                </TextButton>
               ) : (
-                <button
-                  onClick={() => setEdit(true)}
-                  className="items-center p-1 rounded-lg text-gray-600 hover:underline hover:text-black"
-                >
+                <TextButton onClick={() => setEdit(true)}>
                   Edit ...
-                </button>
+                </TextButton>
               )}
             </div>
             <div className="w-full">
@@ -53,12 +46,12 @@ export const ProjectInfo: React.FC<{
             </div>
             {edit && (
               <div className="self-end m-t-4 flex flex-col justify-end gap-4">
-                <button
+                <ButtonDangerText
                   onClick={() => deleteProject(data.id)}
-                  className="self-end items-center p-1 rounded-lg text-red-800 hover:underline hover:text-red-500"
+                  className="self-end"
                 >
                   Delete Project...
-                </button>
+                </ButtonDangerText>
               </div>
             )}
           </>
