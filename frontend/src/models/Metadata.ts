@@ -1,5 +1,9 @@
-export type Metadata<T> = {
+import type { Entity } from "./Entity";
+
+export type Metadata<T extends Entity> = {
   label: string;
+  apiPrefix: string;
+  plural: string;
   fields: FieldsMetadata<T>;
 }
 
@@ -9,15 +13,15 @@ export type FieldsMetadata<T> = {
     constant?: boolean;
     optional?: boolean;
     type: DBType;
-    fkMetadata?: Metadata<any>;
+    fkMetadata?: Metadata<Entity>;
     restrictedOptions?: object;
   };
 };
 
 export type DBType = 
   | "key"
-  | "foreign_key"
-  | "this_key_reference"
+  | "many_to_one"
+  | "one_to_many"
   //| "enum"
   //| "datetime"
   //| "date"
@@ -35,18 +39,13 @@ export const getDefaultDBTypeValue = (type: DBType, optional?: boolean) => {
   switch (type) {
     case "key":
       return 0;
-      break;
-    case "foreign_key":
-      return 0;
-      break;
-    case "this_key_reference":
+    case "many_to_one":
+      return {};
+    case "one_to_many":
       return [];
-      break;
     case "text":
       return "";
-      break;
     case "boolean":
       return false;
-      break;
   }
 }

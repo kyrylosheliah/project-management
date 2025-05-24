@@ -1,41 +1,49 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllProjects } from "../../models/project/service";
-import { type Project } from "../../models/project/type";
-import { useEffect, useState } from "react";
-import { projectMetadata } from "../../models/project/metadata";
+import { useEffect, useState, type JSX } from "react";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import ButtonText from "../ButtonText";
+import type { SearchParams, SearchResponse } from "./search-schema";
+import type { Metadata } from "../../models/Metadata";
+import { searchEntities, type Entity } from "../../models/Entity";
 
-export const ProjectTable: React.FC = () => {
-  const {
-    data,
-    isPending,
-  } = useQuery({
-    queryKey: ["/project/all"],
-    queryFn: fetchAllProjects,
+export type EntityTableParameters<T extends Entity> = {
+  controlled?: { key: keyof T, value: any },
+  metadata: Metadata<T>,
+  search: SearchParams,
+};
+
+export function EntityTable<T extends Entity>(
+  params: EntityTableParameters<T>
+): JSX.Element {
+  const searchPath = params.metadata.apiPrefix + "/search";
+  const { data, isPending } = useQuery<SearchResponse<T>>({
+    queryKey: [searchPath],
+    queryFn: () => searchEntities(params.search, searchPath),
   });
-  const projects = data ?? [];
+  const entities = data ? data.items : [];
+  const pageCount = data ? data.pageCount : 0;
 
   const navigate = useNavigate();
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(data);
   }, [data]);
 
-  const columns: ColumnDef<Project>[] = (
-    Object.keys(projectMetadata.fields) as (keyof Project)[]
+  const columns: ColumnDef<T>[] = (
+    Object.keys(params.metadata.fields) as (keyof T)[]
   ).map((key) => ({
-    header: projectMetadata.fields[key].label,
+    header: params.metadata.fields[key].label,
     accessorKey: key,
-    footer: props => props.column.id,
+    footer: (props) => props.column.id,
   }));
 
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
-  const table = useReactTable<Project>({
-    data: projects,
+  const table = useReactTable<T>({
+    data: entities,
+    pageCount,
     columns,
     state: {
       sorting,
@@ -60,13 +68,13 @@ export const ProjectTable: React.FC = () => {
           className="mb-4 p-2 border rounded w-full max-w-sm"
         />
         <ButtonText disabled={isPending}>
-          {isPending ? "Creating..." : "New Project"}
+          {isPending ? "Creating..." : `New ${params.metadata.label}`}
         </ButtonText>
       </div>
 
       {isPending ? (
         <p>Loading ...</p>
-      ) : data && data.length ? (
+      ) : data && entities.length ? (
         <div className="overflow-x-auto">
           <table className="min-w-full table-auto border">
             <thead className="bg-gray-100">
@@ -106,7 +114,7 @@ export const ProjectTable: React.FC = () => {
                     <ButtonText
                       onClick={() =>
                         navigate({
-                          to: `/project/${row.original.id}`,
+                          to: `${params.metadata.apiPrefix}/${row.original.id}`,
                         })
                       }
                     >
@@ -119,7 +127,7 @@ export const ProjectTable: React.FC = () => {
           </table>
         </div>
       ) : (
-        <div>No projects found</div>
+        <div>No {params.metadata.plural} found</div>
       )}
 
       <div className="flex justify-between items-center mt-4">
@@ -143,5 +151,3 @@ export const ProjectTable: React.FC = () => {
     </div>
   );
 };
-
-//isPending ? <p>Loading ...</p> :

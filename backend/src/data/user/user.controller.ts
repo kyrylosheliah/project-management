@@ -1,8 +1,8 @@
 import { BaseCrudController } from "src/common/base-crud/base-crud.controller";
 import { User } from "src/data/user/user.entity";
 import { UserService } from "src/data/user/user.service";
-import { CreateUserDto } from "src/data/user/user/create-user.dto";
-import { UpdateUserDto } from "src/data/user/user/update-user.dto";
+import { CreateUserDto } from "src/data/user/dto/create-user.dto";
+import { UpdateUserDto } from "src/data/user/dto/update-user.dto";
 import { Body, Controller, Param, Post, Put } from "@nestjs/common";
 import { ApiBody, ApiExtraModels } from "@nestjs/swagger";
 

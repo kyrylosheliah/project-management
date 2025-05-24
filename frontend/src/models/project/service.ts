@@ -2,14 +2,6 @@ import { emitHttp, emitHttpJson } from "../../utils/http";
 import type { Project } from "./type";
 import type { ProjectFormValues } from "./form";
 
-export const fetchAllProjects = async (): Promise<Project[]> =>
-  emitHttp("GET", "/project/all")
-    .then((res) => res.json())
-    .catch((reason) => {
-      alert(`Failed to load projects ${reason}`);
-      return [];
-    });
-
 export const fetchProject = async (
   projectId: string
 ): Promise<Project | undefined> =>

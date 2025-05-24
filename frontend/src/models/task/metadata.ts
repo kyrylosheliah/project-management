@@ -1,17 +1,20 @@
 import type { Metadata } from "../Metadata";
 import { userMetadata } from "../user/metadata";
-import { TaskStatusOptions, type TaskStatus } from "./field-status";
+import { TaskStatusOptions } from "./field-status";
+import type { Task } from "./type";
 
 export const taskMetadata: Metadata<Task> = {
   label: "Task",
+  apiPrefix: "/task",
+  plural: "tasks",
   fields: {
     id: { label: "Id", type: "key", constant: true },
     title: { label: "Title", type: "text" },
     description: { label: "Description", type: "text", optional: true },
-    projectId: { label: "Project", type: "foreign_key" },
-    assignedToId: {
+    project: { label: "Project", type: "many_to_one" },
+    assignedTo: {
       label: "Assignee",
-      type: "foreign_key",
+      type: "many_to_one",
       optional: true,
       fkMetadata: userMetadata,
     },
@@ -21,13 +24,4 @@ export const taskMetadata: Metadata<Task> = {
       restrictedOptions: TaskStatusOptions,
     },
   },
-};
-
-export type Task = {
-  id: number;
-  title: string;
-  description: string | null;
-  projectId: number;
-  assignedToId: number | null;
-  status: TaskStatus;
 };

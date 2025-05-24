@@ -5,18 +5,20 @@ import type { Project } from "./type";
 
 export const projectMetadata: Metadata<Project> = {
   label: "Project",
+  apiPrefix: "/project",
+  plural: "projects",
   fields: {
     id: { label: "Id", type: "key", constant: true },
     title: { label: "Title", type: "text" },
     description: { label: "Description", type: "text", optional: true },
     owner: {
       label: "Owner",
-      type: "foreign_key",
+      type: "many_to_one",
       fkMetadata: userMetadata,
     },
     tasks: {
       label: "Tasks",
-      type: "this_key_reference",
+      type: "one_to_many",
       fkMetadata: taskMetadata,
     },
   },
