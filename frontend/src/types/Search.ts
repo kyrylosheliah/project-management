@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { Entity } from "../../models/Entity";
-import { getZodDefaults } from "../../utils/getZodDefaults";
+import type { Entity } from "../models/Entity";
+import { getZodDefaults } from "../utils/getZodDefaults";
 
 export const SearchSchema = z.object({
   pageNo: z.coerce.number().min(1).default(1),

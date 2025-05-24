@@ -3,8 +3,7 @@ import { deleteProject, fetchProject } from "../../models/project/service";
 import { ProjectForm } from "./Form";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import TextButton from "../ButtonText";
-import ButtonDangerText from "../ButtonDangerText";
+import ButtonText from "../ButtonText";
 
 export const ProjectInfo: React.FC<{
   projectId: string;
@@ -28,17 +27,29 @@ export const ProjectInfo: React.FC<{
         ) : (
           <>
             <div className="mb-4 w-full flex items-center justify-between">
-              <TextButton onClick={() => router.history.back()}>
+              <ButtonText
+                props={{
+                  onClick: () => router.history.back(),
+                }}
+              >
                 ← Back
-              </TextButton>
+              </ButtonText>
               {edit ? (
-                <TextButton onClick={() => setEdit(false)}>
+                <ButtonText
+                  props={{
+                    onClick: () => setEdit(false),
+                  }}
+                >
                   Close edit
-                </TextButton>
+                </ButtonText>
               ) : (
-                <TextButton onClick={() => setEdit(true)}>
+                <ButtonText
+                  props={{
+                    onClick: () => setEdit(true),
+                  }}
+                >
                   Edit ...
-                </TextButton>
+                </ButtonText>
               )}
             </div>
             <div className="w-full">
@@ -46,12 +57,15 @@ export const ProjectInfo: React.FC<{
             </div>
             {edit && (
               <div className="self-end m-t-4 flex flex-col justify-end gap-4">
-                <ButtonDangerText
-                  onClick={() => deleteProject(data.id)}
-                  className="self-end"
+                <ButtonText
+                  type="danger"
+                  props={{
+                    onClick: () => deleteProject(data.id),
+                    className: "self-end",
+                  }}
                 >
                   Delete Project...
-                </ButtonDangerText>
+                </ButtonText>
               </div>
             )}
           </>

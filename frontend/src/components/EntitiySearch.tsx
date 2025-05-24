@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type JSX } from "react";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
 import { useNavigate } from "@tanstack/react-router";
-import ButtonText from "../ButtonText";
-import type { SearchParams, SearchResponse } from "./search-schema";
-import type { Metadata } from "../../models/Metadata";
-import { searchEntities, type Entity } from "../../models/Entity";
+import ButtonText from "./ButtonText";
+import type { Metadata } from "../models/Metadata";
+import { searchEntities, type Entity } from "../models/Entity";
+import type { SearchParams, SearchResponse } from "../types/Search";
 
 export type EntityTableParameters<T extends Entity> = {
   controlled?: { key: keyof T, value: any },
@@ -67,7 +67,7 @@ export function EntityTable<T extends Entity>(
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="mb-4 p-2 border rounded w-full max-w-sm"
         />
-        <ButtonText disabled={isPending}>
+        <ButtonText props={{ disabled: isPending }}>
           {isPending ? "Creating..." : `New ${params.metadata.label}`}
         </ButtonText>
       </div>
@@ -112,11 +112,12 @@ export function EntityTable<T extends Entity>(
                   ))}
                   <td>
                     <ButtonText
-                      onClick={() =>
-                        navigate({
-                          to: `${params.metadata.apiPrefix}/${row.original.id}`,
-                        })
-                      }
+                      props={{
+                        onClick: () =>
+                          navigate({
+                            to: `${params.metadata.apiPrefix}/${row.original.id}`,
+                          }),
+                      }}
                     >
                       Open
                     </ButtonText>
@@ -132,8 +133,10 @@ export function EntityTable<T extends Entity>(
 
       <div className="flex justify-between items-center mt-4">
         <ButtonText
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          props={{
+            onClick: () => table.previousPage(),
+            disabled: !table.getCanPreviousPage(),
+          }}
         >
           Previous
         </ButtonText>
@@ -142,8 +145,10 @@ export function EntityTable<T extends Entity>(
           {table.getPageCount()}
         </span>
         <ButtonText
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          props={{
+            onClick: () => table.nextPage(),
+            disabled: !table.getCanNextPage(),
+          }}
         >
           Next
         </ButtonText>

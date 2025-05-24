@@ -1,4 +1,4 @@
-import type { SearchParams, SearchResponse } from "../components/search/search-schema";
+import type { SearchParams, SearchResponse } from "../types/Search";
 import { emitHttpJson } from "../utils/http";
 import type { Project } from "./project/type";
 import type { Task } from "./task/type";

@@ -73,14 +73,18 @@ export const ProjectForm: React.FC<{
           })}
           <div className="flex flex-row justify-between items-center">
             <ButtonText
-              onClick={() => form.reset()}
-              className="self-end"
+              props={{
+                onClick: () => form.reset(),
+                className: "self-end",
+              }}
             >
               Reset
             </ButtonText>
             <ButtonText
-              type="submit"
-              className="self-end"
+              props={{
+                type: "submit",
+                className: "self-end",
+              }}
             >
               Apply
             </ButtonText>

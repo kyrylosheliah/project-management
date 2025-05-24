@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { defaultSearchParams } from '../components/search/search-schema';
+import { defaultSearchParams } from '../types/Search';
 
 export const Route = createFileRoute('/')({
   component: Index,

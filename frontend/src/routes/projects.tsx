@@ -1,7 +1,7 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
-import { SearchSchema, type SearchParams } from "../components/search/search-schema";
-import { EntityTable } from "../components/search/EntitiyTable";
+import { EntityTable } from "../components/EntitiySearch";
 import { projectMetadata } from "../models/project/metadata";
+import { SearchSchema, type SearchParams } from "../types/Search";
 
 export const Route = createFileRoute('/projects')({
   component: ProjectsPage,
