@@ -1,22 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { deleteProject, getProject } from "../../models/project/service";
 import { ProjectForm } from "./Form";
-import { useRouter } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import ButtonText from "../ButtonText";
-import { EntityTableSearch } from "../EntityTableSearch";
-import { taskMetadata } from "../../models/task/metadata";
-import type { SearchParams } from "../../types/Search";
+import { defaultSearchParams, type SearchParams } from "../../types/Search";
+import { EntityTable } from "../EntityTable";
+import { ProjectService } from "../../models/project/service";
+import { TaskService } from "../../models/task/service";
 
 export const ProjectInfo: React.FC<{
   projectId: string;
   search: SearchParams;
 }> = (params) => {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const { data, isPending } = useQuery({
     queryKey: ["/project/" + params.projectId],
-    queryFn: () => getProject(params.projectId),
+    queryFn: () => ProjectService.get(params.projectId),
   });
 
   const [edit, setEdit] = useState(false);
@@ -33,7 +33,8 @@ export const ProjectInfo: React.FC<{
             <div className="mb-4 w-full flex items-center justify-between">
               <ButtonText
                 props={{
-                  onClick: () => router.history.back(),
+                  onClick: () =>
+                    navigate({ to: "/projects", search: defaultSearchParams }),
                 }}
               >
                 ← Back
@@ -64,7 +65,7 @@ export const ProjectInfo: React.FC<{
                 <ButtonText
                   type="danger"
                   props={{
-                    onClick: () => deleteProject(data.id),
+                    onClick: () => ProjectService.delete(data.id),
                     className: "self-end",
                   }}
                 >
@@ -79,7 +80,12 @@ export const ProjectInfo: React.FC<{
         {isPending || data === undefined ? (
           loadingElement
         ) : (
-          <EntityTableSearch metadata={taskMetadata} search={params.search} />
+          <EntityTable
+            service={TaskService}
+            search={params.search}
+            filter={{ key: "projectId", value: params.projectId }}
+            type="edit"
+          />
         )}
       </div>
     </div>

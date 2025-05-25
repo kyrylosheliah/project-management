@@ -5,8 +5,8 @@ import { TaskStatusOptions } from "./field-status";
 import type { Task } from "./type";
 
 export const taskMetadata: Metadata<Task> = {
-  label: "Task",
   apiPrefix: "/task",
+  singular: "Task",
   plural: "tasks",
   fields: {
     id: { label: "Id", type: "key", constant: true },

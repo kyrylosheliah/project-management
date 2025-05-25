@@ -3,8 +3,8 @@ import { userMetadata } from "../user/metadata";
 import type { Project } from "./type";
 
 export const projectMetadata: Metadata<Project> = {
-  label: "Project",
   apiPrefix: "/project",
+  singular: "Project",
   plural: "projects",
   fields: {
     id: { label: "Id", type: "key", constant: true },

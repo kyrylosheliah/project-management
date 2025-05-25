@@ -1,7 +1,7 @@
 
 // TODO: switch on Database type to render (rich / textual ?) cell element
 
-// export const EntityTableField = (type: DBType, value: any) => {
+// export const EntityTableCell = (type: DBType, value: any) => {
 //   switch (type) {
 //     case "key":
 //       return `#${value}`;

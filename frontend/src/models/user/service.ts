@@ -1,7 +1,8 @@
-import { emitHttp } from "../../utils/http";
+import EntityService from "../EntityService";
+import { getUserFormValues } from "./form";
+import { userMetadata } from "./metadata";
 
-export const fetchUsers = async () => {
-  const res = await emitHttp("GET", "/user/all");
-  if (!res.ok) throw new Error("Failed to load users");
-  return res.json();
-};
+export const UserService = new EntityService(
+  userMetadata,
+  getUserFormValues,
+);

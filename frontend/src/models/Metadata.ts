@@ -1,8 +1,8 @@
 import type { Entity } from "./Entity";
 
 export type Metadata<T extends Entity> = {
-  label: string;
   apiPrefix: string;
+  singular: string;
   plural: string;
   fields: FieldsMetadata<T>;
 }

@@ -5,24 +5,16 @@ import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity
 export abstract class BaseCrudService<T> {
   constructor(protected readonly repository: Repository<T>) {}
 
-  async search(req: SearchEntitiesDto): Promise<{ pageCount: number, items: T[] }> {
-    let entities = this.repository;
-    // pagination
-    let searchCount = await entities.count();
-    if (searchCount == 0) {
-      return { pageCount: 0, items: [] };
-    }
-    const pageModulo = searchCount % req.pageSize;
-    const pageCount = (searchCount - pageModulo) / req.pageSize + (pageModulo === 0 ? 0 : 1);
-    const toSkip = (req.pageNo - 1) * req.pageSize;
-    const toTake = req.pageSize;
+  async search(
+    req: SearchEntitiesDto,
+  ): Promise<{ pageCount: number; items: T[] }> {
     // filtering
     let criteria: object | undefined;
     if (req.criteria !== null) {
       criteria = {};
       for (const [column, criterion] of Object.entries(req.criteria)) {
         // TODO: validate `column: keyof T`
-        if (criterion !== "") {
+        if (criterion !== '') {
           // TODO: criteria[column] = Like(`%${criterion}%`);
           criteria[column] = criterion;
         }
@@ -32,16 +24,24 @@ export abstract class BaseCrudService<T> {
     const toOrder: any = {
       // TODO: validate `orderByColumn: keyof T`
       [req.orderByColumn]: req.ascending ? 'ASC' : 'DESC',
-    }
+    };
     // commence query
+    const toSkip = (req.pageNo - 1) * req.pageSize;
+    const toTake = req.pageSize;
+    const [items, searchCount] = await this.repository.findAndCount({
+      where: criteria,
+      order: toOrder,
+      skip: toSkip,
+      take: toTake,
+    });
+    // pagination
+    const pageModulo = searchCount % req.pageSize;
+    const pageCount =
+      (searchCount - pageModulo) / req.pageSize + (pageModulo === 0 ? 0 : 1);
+
     return {
       pageCount,
-      items: await entities.find({
-        where: criteria,
-        order: toOrder,
-        skip: toSkip,
-        take: toTake,
-      }),
+      items,
     };
   }
 
