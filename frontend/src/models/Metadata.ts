@@ -48,4 +48,4 @@ export const getDefaultDBTypeValue = (type: DBType, optional?: boolean) => {
     case "boolean":
       return false;
   }
-}
+};

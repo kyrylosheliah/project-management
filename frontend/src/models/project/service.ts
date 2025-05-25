@@ -2,7 +2,7 @@ import { emitHttp, emitHttpJson } from "../../utils/http";
 import type { Project } from "./type";
 import type { ProjectFormValues } from "./form";
 
-export const fetchProject = async (
+export const getProject = async (
   projectId: string
 ): Promise<Project | undefined> =>
   emitHttp("GET", "/project/" + projectId)

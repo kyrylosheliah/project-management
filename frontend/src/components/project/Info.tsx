@@ -1,18 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { deleteProject, fetchProject } from "../../models/project/service";
+import { deleteProject, getProject } from "../../models/project/service";
 import { ProjectForm } from "./Form";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import ButtonText from "../ButtonText";
+import { EntityTableSearch } from "../EntityTableSearch";
+import { taskMetadata } from "../../models/task/metadata";
+import type { SearchParams } from "../../types/Search";
 
 export const ProjectInfo: React.FC<{
   projectId: string;
+  search: SearchParams;
 }> = (params) => {
   const router = useRouter();
 
   const { data, isPending } = useQuery({
     queryKey: ["/project/" + params.projectId],
-    queryFn: () => fetchProject(params.projectId),
+    queryFn: () => getProject(params.projectId),
   });
 
   const [edit, setEdit] = useState(false);
@@ -75,7 +79,7 @@ export const ProjectInfo: React.FC<{
         {isPending || data === undefined ? (
           loadingElement
         ) : (
-          <ProjectForm edit={edit} project={data} />
+          <EntityTableSearch metadata={taskMetadata} search={params.search} />
         )}
       </div>
     </div>

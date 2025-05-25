@@ -4,17 +4,18 @@ import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel
 import { useNavigate } from "@tanstack/react-router";
 import ButtonText from "./ButtonText";
 import type { Metadata } from "../models/Metadata";
-import { searchEntities, type Entity } from "../models/Entity";
+import { type Entity } from "../models/Entity";
+import { searchEntities } from "../models/EntityService";
 import type { SearchParams, SearchResponse } from "../types/Search";
 
-export type EntityTableParameters<T extends Entity> = {
-  controlled?: { key: keyof T, value: any },
+export type EntityTableSearchParameters<T extends Entity> = {
+  filter?: { key: keyof T, value: any },
   metadata: Metadata<T>,
   search: SearchParams,
 };
 
-export function EntityTable<T extends Entity>(
-  params: EntityTableParameters<T>
+export function EntityTableSearch<T extends Entity>(
+  params: EntityTableSearchParameters<T>
 ): JSX.Element {
   const searchPath = params.metadata.apiPrefix + "/search";
   const { data, isPending } = useQuery<SearchResponse<T>>({
