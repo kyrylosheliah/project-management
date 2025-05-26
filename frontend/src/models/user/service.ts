@@ -1,8 +1,4 @@
 import EntityService from "../EntityService";
-import { getUserFormValues } from "./form";
-import { userMetadata } from "./metadata";
+import { UserMetadata } from "./metadata";
 
-export const UserService = new EntityService(
-  userMetadata,
-  getUserFormValues,
-);
+export const UserService = new EntityService(UserMetadata);

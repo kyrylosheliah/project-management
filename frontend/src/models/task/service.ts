@@ -1,8 +1,4 @@
 import EntityService from "../EntityService";
-import { getTaskFormValues } from "./form";
-import { taskMetadata } from "./metadata";
+import { TaskMetadata } from "./metadata";
 
-export const TaskService = new EntityService(
-  taskMetadata,
-  getTaskFormValues,
-);
+export const TaskService = new EntityService(TaskMetadata);

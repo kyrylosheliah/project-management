@@ -1,7 +1,11 @@
-import type { Metadata } from "../Metadata";
+import type { EntityMetadata } from "../EntityMetadata";
+import { UserFormSchema } from "./form";
 import type { User } from "./type";
 
-export const userMetadata: Metadata<User> = {
+export const UserMetadata: EntityMetadata<
+  User,
+  typeof UserFormSchema
+> = {
   apiPrefix: "/user",
   singular: "User",
   plural: "users",
@@ -9,4 +13,17 @@ export const userMetadata: Metadata<User> = {
     id: { label: "Id", type: "key", constant: true },
     name: { label: "Name", type: "text" },
   },
+  relations: [
+    {
+      label: "Managing Projects",
+      fkServiceEntity: "project",
+      fkField: "ownerId",
+    },
+    {
+      label: "Assigned Projects",
+      fkServiceEntity: "task",
+      fkField: "assigneeId",
+    },
+  ],
+  formSchema: UserFormSchema,
 };

@@ -1,14 +1,23 @@
+import type { z } from "zod";
 import type { SearchParams, SearchResponse } from "../types/Search";
 import { emitHttp, emitHttpJson } from "../utils/http";
 import { type Entity } from "./Entity";
-import type { Metadata } from "./Metadata";
+import type { EntityMetadata } from "./EntityMetadata";
 import type { ProjectFormValues } from "./project/form";
 
-export default class EntityService<T extends Entity, TForm> {
+export default class EntityService<
+  T extends Entity,
+  TSchema extends z.ZodObject<z.ZodRawShape>,
+> {
   constructor(
-    readonly metadata: Metadata<T>,
-    readonly getFormValues: (e: T) => TForm
+    readonly metadata: EntityMetadata<T, TSchema>,
   ) {}
+
+  getFormFields(entity: T): TSchema {
+    const temp: any = { ...entity };
+    delete temp.id;
+    return temp as TSchema;
+  }
 
   async search(
     search: SearchParams,
@@ -32,7 +41,7 @@ export default class EntityService<T extends Entity, TForm> {
       });
   }
 
-  async post(data: TForm): Promise<boolean> {
+  async post(data: TSchema): Promise<boolean> {
     return emitHttpJson("POST", `/${this.metadata.singular}`, data)
       .then((_) => true)
       .catch((reason) => {

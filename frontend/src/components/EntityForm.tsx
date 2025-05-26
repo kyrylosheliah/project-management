@@ -1,33 +1,41 @@
 import { useForm } from "react-hook-form";
-import type { Project } from "../../models/project/type";
-import { getProjectFormValues, ProjectSchema, type ProjectFormValues } from "../../models/project/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectMetadata } from "../../models/project/metadata";
-import ButtonText from "../ButtonText";
-import { ProjectService } from "../../models/project/service";
+import { z } from "zod";
+import type { Entity } from "../models/Entity";
+import { ProjectService } from "../models/project/service";
+import type EntityService from "../models/EntityService";
+import ButtonText from "./ButtonText";
 
-export const ProjectForm: React.FC<{
+export const EntityForm = <
+  T extends Entity,
+  TSchema extends z.ZodObject<z.ZodRawShape>
+>(params: {
   edit?: boolean;
-  project: Project;
-}> = (params) => {
-  const defaultFormValues = getProjectFormValues(params.project);
+  entity: T;
+  service: EntityService<T, TSchema>,
+}) => {
+  const metadata = ProjectService.metadata;
 
-  const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(ProjectSchema),
-    defaultValues: defaultFormValues,
+  const defaultFormFields = params.service.getFormFields(params.entity);
+
+  type EntityFormValues = z.infer<typeof metadata.formSchema>;
+
+  const form = useForm<EntityFormValues>({
+    resolver: zodResolver(metadata.formSchema),
+    defaultValues: defaultFormFields,
   });
 
   const isDirty = (key: string) =>
-    form.formState.dirtyFields[key as keyof ProjectFormValues];
+    form.formState.dirtyFields[key as keyof EntityFormValues];
 
   const queryClient = useQueryClient();
-  const mutation = useMutation<any, Error, ProjectFormValues>({
-    mutationFn: (newValues: ProjectFormValues): Promise<any> =>
-      ProjectService.put(params.project.id, newValues),
+  const mutation = useMutation<any, Error, EntityFormValues>({
+    mutationFn: (newValues: EntityFormValues): Promise<any> =>
+      params.service.put(params.entity.id, newValues),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/project/${params.project.id}`] });
-      alert("Project updated!");
+      queryClient.invalidateQueries({ queryKey: [`${metadata.apiPrefix}/${params.entity.id}`] });
+      alert(`${metadata.singular} updated!`);
       form.reset();
     },
     onError: () => {
@@ -35,17 +43,17 @@ export const ProjectForm: React.FC<{
     }
   });
 
-  const onSubmit = (newValues: ProjectFormValues) => {
+  const onSubmit = (newFields: EntityFormValues) => {
     console.log("onSubmit");
-    mutation.mutate(newValues);
+    mutation.mutate(newFields);
   };
   
   return (
     <div className="">
       {params.edit ? (
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-          {Object.keys(defaultFormValues).map((keyString: string) => {
-            const key = keyString as keyof ProjectFormValues;
+          {Object.keys(defaultFormFields).map((keyString: string) => {
+            const key = keyString as keyof EntityFormValues;
             const errors = form.formState.errors;
             const borderColor = errors[key]
               ? "border-red-400"
@@ -53,7 +61,7 @@ export const ProjectForm: React.FC<{
                 ? "border-yellow-600"
                 : "border-gray-300";
             return (
-              <div key={`${projectMetadata.singular}_prop_${key}`}>
+              <div key={`${metadata.singular}_prop_${key}`}>
                 <label
                   htmlFor={key}
                   children={key}
@@ -92,8 +100,8 @@ export const ProjectForm: React.FC<{
         </form>
       ) : (
         <div className="flex flex-col gap-3 text-align-start">
-          {Object.entries(defaultFormValues).map(([key, value]) => (
-            <div key={`${projectMetadata.singular}_prop_${key}`}>
+          {Object.entries(defaultFormFields).map(([key, value]) => (
+            <div key={`${metadata.singular}_prop_${key}`}>
               <div children={key} className="text-sm fw-700" />
               <div>{value}</div>
             </div>

@@ -21,8 +21,7 @@ export default function ProjectsPage() {
   return (<div>
     <EntityTable
       service={ProjectService}
-      search={search}
-      type="search"
+      search={{ value: search, set: (_) => {} }}
     />
   </div>);
 }

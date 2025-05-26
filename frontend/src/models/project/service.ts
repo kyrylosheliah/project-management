@@ -1,8 +1,4 @@
 import EntityService from "../EntityService";
-import { getProjectFormValues } from "./form";
-import { projectMetadata } from "./metadata";
+import { ProjectMetadata } from "./metadata";
 
-export const ProjectService = new EntityService(
-  projectMetadata,
-  getProjectFormValues,
-);
+export const ProjectService = new EntityService(ProjectMetadata);

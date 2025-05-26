@@ -6,7 +6,5 @@ export type Task = {
   description: string | null;
   projectId: number;
   assigneeId: number | null;
-  // project: Project;
-  // assignedTo: User | null;
   status: TaskStatus;
 };

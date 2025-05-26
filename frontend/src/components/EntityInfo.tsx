@@ -1,22 +1,30 @@
 import { useQuery } from "@tanstack/react-query";
-import { ProjectForm } from "./Form";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import ButtonText from "../ButtonText";
-import { defaultSearchParams, type SearchParams } from "../../types/Search";
-import { EntityTable } from "../EntityTable";
-import { ProjectService } from "../../models/project/service";
-import { TaskService } from "../../models/task/service";
+import { defaultSearchParams, SearchSchema, type SearchParams } from "../types/Search";
+import type { Entity } from "../models/Entity";
+import type { z } from "zod";
+import ButtonText from "./ButtonText";
+import { EntityForm } from "./EntityForm";
+import { EntityTable } from "./EntityTable";
+import type EntityService from "../models/EntityService";
+import { ServiceRegistry } from "../models/EntityMetadata";
 
-export const ProjectInfo: React.FC<{
-  projectId: string;
-  search: SearchParams;
-}> = (params) => {
+export const EntityInfo = <
+  T extends Entity,
+  TSchema extends z.ZodObject<z.ZodRawShape>
+>(params: {
+  entityId: string;
+  service: EntityService<T, TSchema>;
+}) => {
   const navigate = useNavigate();
 
+  const metadata = params.service.metadata;
+  const service = params.service;
+
   const { data, isPending } = useQuery({
-    queryKey: ["/project/" + params.projectId],
-    queryFn: () => ProjectService.get(params.projectId),
+    queryKey: [`${metadata.apiPrefix}/${params.entityId}`],
+    queryFn: () => service.get(params.entityId),
   });
 
   const [edit, setEdit] = useState(false);
@@ -58,14 +66,14 @@ export const ProjectInfo: React.FC<{
               )}
             </div>
             <div className="w-full">
-              <ProjectForm edit={edit} project={data} />
+              <EntityForm edit={edit} entity={data} service={service} />
             </div>
             {edit && (
               <div className="self-end m-t-4 flex flex-col justify-end gap-4">
                 <ButtonText
                   type="danger"
                   props={{
-                    onClick: () => ProjectService.delete(data.id),
+                    onClick: () => service.delete(data.id),
                     className: "self-end",
                   }}
                 >
@@ -77,16 +85,30 @@ export const ProjectInfo: React.FC<{
         )}
       </div>
       <div className="w-full">
-        {isPending || data === undefined ? (
-          loadingElement
-        ) : (
-          <EntityTable
-            service={TaskService}
-            search={params.search}
-            filter={{ key: "projectId", value: params.projectId }}
-            type="edit"
-          />
-        )}
+        {metadata.relations &&
+          metadata.relations.length &&
+          metadata.relations.map((relation) => {
+            const [search, setSearch] = useState<SearchParams>(
+              defaultSearchParams
+            );
+            const setSearchInterceptor = (partialState: Partial<SearchParams>) => {
+              const result = SearchSchema.safeParse({ ...search, ...partialState });
+              if (result.success) {
+                setSearch(result.data);
+              } else {
+                alert(`Invalid search parameters, ${result.error.format()}`);
+              }
+            };
+            const service = ServiceRegistry[relation.fkServiceEntity];
+            return (
+              <EntityTable
+                key={`relation_${relation.label}`}
+                service={service as any}
+                search={{ value: search, set: setSearchInterceptor }}
+                edit
+              />
+            );
+          })}
       </div>
     </div>
   );

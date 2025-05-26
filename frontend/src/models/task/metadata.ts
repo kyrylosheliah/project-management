@@ -1,10 +1,14 @@
-import type { Metadata } from "../Metadata";
-import { projectMetadata } from "../project/metadata";
-import { userMetadata } from "../user/metadata";
+import type { EntityMetadata } from "../EntityMetadata";
+import { ProjectMetadata } from "../project/metadata";
+import { UserMetadata } from "../user/metadata";
 import { TaskStatusOptions } from "./field-status";
+import { TaskFormSchema } from "./form";
 import type { Task } from "./type";
 
-export const taskMetadata: Metadata<Task> = {
+export const TaskMetadata: EntityMetadata<
+  Task,
+  typeof TaskFormSchema
+> = {
   apiPrefix: "/task",
   singular: "Task",
   plural: "tasks",
@@ -15,13 +19,13 @@ export const taskMetadata: Metadata<Task> = {
     projectId: {
       label: "Project",
       type: "many_to_one",
-      fkMetadata: projectMetadata,
+      fkMetadata: ProjectMetadata,
     },
     assigneeId: {
       label: "Assignee",
       type: "many_to_one",
       optional: true,
-      fkMetadata: userMetadata,
+      fkMetadata: UserMetadata,
     },
     status: {
       label: "Task status",
@@ -29,4 +33,5 @@ export const taskMetadata: Metadata<Task> = {
       restrictedOptions: TaskStatusOptions,
     },
   },
+  formSchema: TaskFormSchema,
 };

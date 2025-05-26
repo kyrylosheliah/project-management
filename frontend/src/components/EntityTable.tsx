@@ -6,31 +6,40 @@ import ButtonText from "./ButtonText";
 import { type Entity } from "../models/Entity";
 import type { SearchParams, SearchResponse } from "../types/Search";
 import ButtonIcon from "./ButtonIcon";
+import type { z } from "zod";
 import type EntityService from "../models/EntityService";
 
-const mixInSearchFilter = <T,>(
+const mixInSearchFilter = (
   search: SearchParams,
-  filter: { key: keyof T, value: any },
+  filter: { key: string, value: any },
 ): SearchParams => {
   let temp: any = { ...search };
   temp.criteria[filter.key] = filter.value;
   return temp as SearchParams;
 };
 
-export function EntityTable<T extends Entity, TForm>(params: {
-  filter?: { key: keyof T; value: any };
-  service: EntityService<T, TForm>;
-  search: SearchParams;
-  type: "search" | "edit" | "list";
+export function EntityTable<
+  T extends Entity,
+  TSchema extends z.ZodObject<z.ZodRawShape>
+>(params: {
+  filter?: { key: string; value: any };
+  service: EntityService<T, TSchema>;
+  search: {
+    value: SearchParams;
+    set: (partialSearch: Partial<SearchParams>) => void;
+  };
+  edit?: boolean;
 }): JSX.Element {
   const metadata = params.service.metadata;
+  const service = params.service;
+
   const searchPath = metadata.apiPrefix + "/search";
   const search = params.filter
-    ? mixInSearchFilter(params.search, params.filter)
-    : params.search;
+    ? mixInSearchFilter(params.search.value, params.filter)
+    : params.search.value;
   const { data, isPending } = useQuery<SearchResponse<T>>({
     queryKey: [searchPath],
-    queryFn: () => params.service.search(search, searchPath),
+    queryFn: () => service.search(search, searchPath),
   });
   const entities = data ? data.items : [];
   const pageCount = data ? data.pageCount : 0;
@@ -44,7 +53,7 @@ export function EntityTable<T extends Entity, TForm>(params: {
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
 
   let columns: ColumnDef<T>[] = [];
-  if (params.type === "edit") {
+  if (params.edit) {
     columns.push({
       id: "select",
       header: () => (
@@ -94,23 +103,21 @@ export function EntityTable<T extends Entity, TForm>(params: {
       //footer: (props) => props.column.id,
     }))
   );
-  if (params.type === "search") {
+  if (params.edit !== true) {
     columns.push({
       id: "open",
       header: "Info",
       cell: ({ row }) => (
-        <td>
-          <ButtonText
-            props={{
-              onClick: () =>
-                navigate({
-                  to: `${metadata.apiPrefix}/${row.original.id}`,
-                }),
-            }}
-          >
-            Open
-          </ButtonText>
-        </td>
+        <ButtonText
+          props={{
+            onClick: () =>
+              navigate({
+                to: `${metadata.apiPrefix}/${row.original.id}`,
+              }),
+          }}
+        >
+          Open
+        </ButtonText>
       ),
     });
   }
