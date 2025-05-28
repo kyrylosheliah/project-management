@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import type { FieldValues, Path } from "react-hook-form";
 import type { z } from "zod";
-import type { Entity } from "../models/Entity";
-import type { EntityFieldMetadata } from "../models/EntityMetadata";
-import type EntityService from "../models/EntityService";
-import { EntityServiceRegistry } from "../models/EntityServiceRegistry";
+import type { Entity } from "../entities/Entity";
+import type { EntityFieldMetadata } from "../entities/EntityMetadata";
+import type EntityService from "../entities/EntityService";
+import { EntityServiceRegistry } from "../entities/EntityServiceRegistry";
 import ButtonIcon from "./ButtonIcon";
 
 export const EntityFieldDisplay = <
@@ -27,7 +27,7 @@ export const EntityFieldDisplay = <
   switch (fieldMetadata.type) {
     case "key":
     //case "number":
-      return `#${new String(params.fieldValue)}`;
+      return `${new String(params.fieldValue)}`;
     case "boolean":
       return params.fieldValue ? "yes" : "no";
     case "text":
@@ -55,10 +55,10 @@ const EntityFkField = (params: {
     queryKey: [`${fkMetadata.apiPrefix}/${params.fkId}`],
     queryFn: () => fkService.get(params.fkId),
   });
-  const loadingElement = <div>Loading ...</div>;
+  const loadingElement = <div>...</div>;
   return isPending || data === undefined ? (
     loadingElement
   ) : (
-    <div>{JSON.stringify(data)}</div>
+    <div>{fkMetadata.peekComponent(data)}</div>
   );
 };

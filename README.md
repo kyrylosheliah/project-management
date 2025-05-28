@@ -42,6 +42,7 @@ Must:
 - Update task status feature
 
 Could:
+- EntityFieldDisplay full entity info and link popup on hover
 - Set DB connection string and ports with environment variables
 - @nestjs/swagger docs
 - @nestjs/jwt auth

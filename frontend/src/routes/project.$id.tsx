@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { EntityInfo } from '../components/EntityInfo';
-import { ProjectService } from '../models/project/service';
+import { ProjectService } from '../entities/project/service';
 
 export const Route = createFileRoute('/project/$id')({
   //loader: async ({ params }) => (fetchPost(params.id)),

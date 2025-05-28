@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import type { Entity } from "./Entity";
 import type { EntityServiceRegistry } from "./EntityServiceRegistry";
+import type { ReactNode } from "react";
 
 export type EntityMetadata<
   T extends Entity,
@@ -18,6 +19,7 @@ export type EntityMetadata<
     fkField: string;
   }>,
   formSchema: TSchema;
+  peekComponent: (entity: T) => ReactNode;
 };
 
 export type EntityFieldMetadata = {

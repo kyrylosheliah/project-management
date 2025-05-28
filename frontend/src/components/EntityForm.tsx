@@ -2,9 +2,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import type { Entity } from "../models/Entity";
-import { ProjectService } from "../models/project/service";
-import type EntityService from "../models/EntityService";
+import type { Entity } from "../entities/Entity";
+import { ProjectService } from "../entities/project/service";
+import type EntityService from "../entities/EntityService";
 import ButtonText from "./ButtonText";
 import { EntityFormField } from "./EntityFormField";
 

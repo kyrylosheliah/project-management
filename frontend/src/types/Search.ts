@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Entity } from "../models/Entity";
+import type { Entity } from "../entities/Entity";
 import { getZodDefaults } from "../utils/getZodDefaults";
 
 export const SearchSchema = z.object({

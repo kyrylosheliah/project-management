@@ -3,11 +3,11 @@ import { useEffect, useState, type JSX } from "react";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
 import { useNavigate } from "@tanstack/react-router";
 import ButtonText from "./ButtonText";
-import { type Entity } from "../models/Entity";
+import { type Entity } from "../entities/Entity";
 import { defaultSearchParams, SearchSchema, type SearchParams, type SearchResponse } from "../types/Search";
 import ButtonIcon from "./ButtonIcon";
 import type { z } from "zod";
-import type EntityService from "../models/EntityService";
+import type EntityService from "../entities/EntityService";
 import { cx } from "../utils/cx";
 import { EntityFieldDisplay } from "./EntityFieldDisplay";
 

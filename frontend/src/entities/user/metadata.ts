@@ -1,4 +1,5 @@
 import type { EntityMetadata } from "../EntityMetadata";
+import { UserBadge } from "./badge";
 import { UserFormSchema } from "./form";
 import type { User } from "./type";
 
@@ -12,6 +13,7 @@ export const UserMetadata: EntityMetadata<
   fields: {
     id: { label: "Id", type: "key", constant: true },
     name: { label: "Name", type: "text" },
+    email: { label: "Email", type: "text" },
   },
   relations: [
     {
@@ -26,4 +28,5 @@ export const UserMetadata: EntityMetadata<
     },
   ],
   formSchema: UserFormSchema,
+  peekComponent: UserBadge,
 };

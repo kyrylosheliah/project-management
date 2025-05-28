@@ -1,4 +1,5 @@
 import type { EntityMetadata } from "../EntityMetadata";
+import { ProjectBadge } from "./badge";
 import { ProjectFormSchema } from "./form";
 import type { Project } from "./type";
 
@@ -27,4 +28,5 @@ export const ProjectMetadata: EntityMetadata<
     },
   ],
   formSchema: ProjectFormSchema,
+  peekComponent: ProjectBadge,
 };

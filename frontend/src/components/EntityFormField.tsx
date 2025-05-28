@@ -1,10 +1,10 @@
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import type { z } from "zod";
-import type { DatabaseType } from "../models/EntityMetadata";
-import type { Entity } from "../models/Entity";
+import type { DatabaseType } from "../entities/EntityMetadata";
+import type { Entity } from "../entities/Entity";
 import ButtonIcon from "./ButtonIcon";
-import type EntityService from "../models/EntityService";
-import { EntityServiceRegistry } from "../models/EntityServiceRegistry";
+import type EntityService from "../entities/EntityService";
+import { EntityServiceRegistry } from "../entities/EntityServiceRegistry";
 import { EntityFieldDisplay } from "./EntityFieldDisplay";
 import { useState } from "react";
 import { cx } from "../utils/cx";

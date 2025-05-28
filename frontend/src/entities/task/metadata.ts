@@ -1,4 +1,5 @@
 import type { EntityMetadata } from "../EntityMetadata";
+import { TaskBadge } from "./badge";
 import { TaskStatusOptions } from "./field-status";
 import { TaskFormSchema } from "./form";
 import type { Task } from "./type";
@@ -32,4 +33,5 @@ export const TaskMetadata: EntityMetadata<
     },
   },
   formSchema: TaskFormSchema,
+  peekComponent: TaskBadge,
 };
