@@ -31,7 +31,7 @@ export default class EntityService<
       });
   }
 
-  async get(entityId: string): Promise<T | undefined> {
+  async get(entityId: string | number): Promise<T | undefined> {
     return emitHttp("GET", `/${this.metadata.singular}/${entityId}`)
       .then((res) => res.json())
       .catch((reason) => {

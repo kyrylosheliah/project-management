@@ -8,7 +8,7 @@ import ButtonText from "./ButtonText";
 import { EntityForm } from "./EntityForm";
 import { EntityTable } from "./EntityTable";
 import type EntityService from "../models/EntityService";
-import { ServiceRegistry } from "../models/EntityMetadata";
+import { EntityServiceRegistry } from "../models/EntityServiceRegistry";
 
 export const EntityInfo = <
   T extends Entity,
@@ -87,28 +87,13 @@ export const EntityInfo = <
       <div className="w-full">
         {metadata.relations &&
           metadata.relations.length &&
-          metadata.relations.map((relation) => {
-            const [search, setSearch] = useState<SearchParams>(
-              defaultSearchParams
-            );
-            const setSearchInterceptor = (partialState: Partial<SearchParams>) => {
-              const result = SearchSchema.safeParse({ ...search, ...partialState });
-              if (result.success) {
-                setSearch(result.data);
-              } else {
-                alert(`Invalid search parameters, ${result.error.format()}`);
-              }
-            };
-            const service = ServiceRegistry[relation.fkServiceEntity];
-            return (
-              <EntityTable
-                key={`relation_${relation.label}`}
-                service={service as any}
-                search={{ value: search, set: setSearchInterceptor }}
-                edit
-              />
-            );
-          })}
+          metadata.relations.map((relation) => (
+            <EntityTable
+              key={`relation_${relation.label}`}
+              service={EntityServiceRegistry[relation.apiPrefix] as any}
+              edit
+            />
+          ))}
       </div>
     </div>
   );

@@ -4,10 +4,11 @@ import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type Sortin
 import { useNavigate } from "@tanstack/react-router";
 import ButtonText from "./ButtonText";
 import { type Entity } from "../models/Entity";
-import type { SearchParams, SearchResponse } from "../types/Search";
+import { defaultSearchParams, SearchSchema, type SearchParams, type SearchResponse } from "../types/Search";
 import ButtonIcon from "./ButtonIcon";
 import type { z } from "zod";
 import type EntityService from "../models/EntityService";
+import { cx } from "../utils/cx";
 
 const mixInSearchFilter = (
   search: SearchParams,
@@ -20,23 +21,45 @@ const mixInSearchFilter = (
 
 export function EntityTable<
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>
+  TSchema extends z.ZodObject<z.ZodRawShape>,
 >(params: {
+  controlled?: [
+    number | null,
+    React.Dispatch<React.SetStateAction<number | null>>,
+  ];
   filter?: { key: string; value: any };
   service: EntityService<T, TSchema>;
-  search: {
+  search?: { // currently, it has 1 use case - search query url parameter
     value: SearchParams;
     set: (partialSearch: Partial<SearchParams>) => void;
   };
   edit?: boolean;
+  className?: string;
 }): JSX.Element {
   const metadata = params.service.metadata;
   const service = params.service;
 
+  const [rawSearch, setRawSearch] = params.search
+    ? [params.search.value, params.search.set]
+    : useState<SearchParams>(
+        params.filter
+          ? mixInSearchFilter(defaultSearchParams, params.filter)
+          : defaultSearchParams
+      );
+  // todo: add external search setter handling
+  const [search, setSearch] = [
+    rawSearch,
+    (partialState: Partial<SearchParams>) => {
+      const result = SearchSchema.safeParse({ ...search, ...partialState });
+      if (result.success) {
+        setRawSearch(result.data);
+      } else {
+        alert(`Invalid search parameters, ${result.error.format()}`);
+      }
+    }
+  ];
+
   const searchPath = metadata.apiPrefix + "/search";
-  const search = params.filter
-    ? mixInSearchFilter(params.search.value, params.filter)
-    : params.search.value;
   const { data, isPending } = useQuery<SearchResponse<T>>({
     queryKey: [searchPath],
     queryFn: () => service.search(search, searchPath),
@@ -50,10 +73,12 @@ export function EntityTable<
     console.log(data);
   }, [data]);
 
-  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const [selectedRowId, setSelectedRowId] = params.controlled
+    ? params.controlled
+    : useState<number | null>(null);
 
   let columns: ColumnDef<T>[] = [];
-  if (params.edit) {
+  if (params.edit || params.controlled) {
     columns.push({
       id: "select",
       header: () => (
@@ -62,7 +87,7 @@ export function EntityTable<
             onClick: () => setSelectedRowId(null),
             disabled: selectedRowId === null,
           }}
-          size="w-6 h-6"
+          className="w-6 h-6"
         >
           <svg
             className="w-6 h-6"
@@ -144,7 +169,12 @@ export function EntityTable<
   });
 
   return (
-    <div className="p-4 max-w-xl gap-4 flex flex-col items-center">
+    <div
+      className={cx(
+        "p-4 max-w-xl gap-4 flex flex-col items-center",
+        params.className
+      )}
+    >
       <div className="gap-4 flex flex-row items-center w-full max-w-md">
         <input
           type="text"
@@ -153,7 +183,7 @@ export function EntityTable<
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="p-2 border rounded w-full"
         />
-        <ButtonIcon size="w-10 h-10">
+        <ButtonIcon className="w-10 h-10">
           <svg
             className="w-6 h-6"
             aria-hidden="true"

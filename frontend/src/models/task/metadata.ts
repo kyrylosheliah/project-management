@@ -1,6 +1,4 @@
 import type { EntityMetadata } from "../EntityMetadata";
-import { ProjectMetadata } from "../project/metadata";
-import { UserMetadata } from "../user/metadata";
 import { TaskStatusOptions } from "./field-status";
 import { TaskFormSchema } from "./form";
 import type { Task } from "./type";
@@ -19,13 +17,13 @@ export const TaskMetadata: EntityMetadata<
     projectId: {
       label: "Project",
       type: "many_to_one",
-      fkMetadata: ProjectMetadata,
+      apiPrefix: "/project",
     },
     assigneeId: {
       label: "Assignee",
       type: "many_to_one",
       optional: true,
-      fkMetadata: UserMetadata,
+      apiPrefix: "/user",
     },
     status: {
       label: "Task status",

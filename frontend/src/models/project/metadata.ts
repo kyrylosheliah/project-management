@@ -1,5 +1,4 @@
 import type { EntityMetadata } from "../EntityMetadata";
-import { UserMetadata } from "../user/metadata";
 import { ProjectFormSchema } from "./form";
 import type { Project } from "./type";
 
@@ -17,13 +16,13 @@ export const ProjectMetadata: EntityMetadata<
     ownerId: {
       label: "Owner",
       type: "many_to_one",
-      fkMetadata: UserMetadata,
+      apiPrefix: "/user",
     },
   },
   relations: [
     {
       label: "Tasks",
-      fkServiceEntity: "task",
+      apiPrefix: "/task",
       fkField: "projectId",
     },
   ],

@@ -1,8 +1,6 @@
 import type { z } from "zod";
 import type { Entity } from "./Entity";
-import { ProjectService } from "./project/service";
-import { TaskService } from "./task/service";
-import { UserService } from "./user/service";
+import type { EntityServiceRegistry } from "./EntityServiceRegistry";
 
 export type EntityMetadata<
   T extends Entity,
@@ -12,34 +10,30 @@ export type EntityMetadata<
   singular: string;
   plural: string;
   fields: {
-    [column in keyof T]: {
-      label: string;
-      constant?: boolean;
-      optional?: boolean;
-      type: DBType;
-      fkMetadata?: EntityMetadata<Entity, any>;
-      restrictedOptions?: object;
-    };
+    [column in keyof T]: EntityFieldMetadata;
   };
   relations?: Array<{
     label: string;
-    fkServiceEntity: keyof typeof ServiceRegistry;
+    apiPrefix: keyof typeof EntityServiceRegistry;
     fkField: string;
   }>,
   formSchema: TSchema;
 };
 
-export const ServiceRegistry = {
-  user: UserService,
-  task: TaskService,
-  project: ProjectService,
+export type EntityFieldMetadata = {
+  type: DatabaseType;
+  label: string;
+  constant?: boolean;
+  optional?: boolean;
+  apiPrefix?: keyof typeof EntityServiceRegistry;
+  restrictedOptions?: object;
 };
 
-export type DBType = 
+export type DatabaseType = 
   | "key"
   | "many_to_one"
-  | "one_to_many"
-  //| "enum"
+  //| "one_to_many" // are specified via relations field
+  | "enum"
   //| "datetime"
   //| "date"
   //| "number"
@@ -49,17 +43,17 @@ export type DBType =
   | "boolean"
   //| "char";
 
-export const getDefaultDBTypeValue = (type: DBType, optional?: boolean) => {
-  if (optional) {
+export const getDefaultDBTypeValue = (
+  fieldMetadata: EntityFieldMetadata,
+) => {
+  if (fieldMetadata.optional) {
     return null;
   }
-  switch (type) {
+  switch (fieldMetadata.type) {
     case "key":
       return 0;
     case "many_to_one":
       return {};
-    case "one_to_many":
-      return [];
     case "text":
       return "";
     case "boolean":
