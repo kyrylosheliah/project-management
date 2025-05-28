@@ -9,6 +9,7 @@ import ButtonIcon from "./ButtonIcon";
 import type { z } from "zod";
 import type EntityService from "../models/EntityService";
 import { cx } from "../utils/cx";
+import { EntityFieldDisplay } from "./EntityFieldDisplay";
 
 const mixInSearchFilter = (
   search: SearchParams,
@@ -125,7 +126,13 @@ export function EntityTable<
     (Object.keys(metadata.fields) as (keyof T)[]).map((key) => ({
       header: metadata.fields[key].label,
       accessorKey: key,
-      //footer: (props) => props.column.id,
+      cell: (context) => (
+        <EntityFieldDisplay
+          fieldKey={key as any}
+          fieldValue={context.getValue()}
+          service={params.service}
+        />
+      ),
     }))
   );
   if (params.edit !== true) {
@@ -171,7 +178,7 @@ export function EntityTable<
   return (
     <div
       className={cx(
-        "p-4 max-w-xl gap-4 flex flex-col items-center",
+        "p-4 max-w-3xl gap-4 flex flex-col items-center",
         params.className
       )}
     >
@@ -233,7 +240,7 @@ export function EntityTable<
       {isPending ? (
         <p>Loading ...</p>
       ) : data && entities.length ? (
-        <>
+        <div className="w-full">
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto border">
               <thead className="bg-gray-100">
@@ -296,7 +303,7 @@ export function EntityTable<
               Next
             </ButtonText>
           </div>
-        </>
+        </div>
       ) : (
         <div>No {metadata.plural} found</div>
       )}

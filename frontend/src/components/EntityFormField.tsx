@@ -1,13 +1,12 @@
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import type { z } from "zod";
-import type { DatabaseType, EntityFieldMetadata } from "../models/EntityMetadata";
+import type { DatabaseType } from "../models/EntityMetadata";
 import type { Entity } from "../models/Entity";
 import ButtonIcon from "./ButtonIcon";
 import type EntityService from "../models/EntityService";
-import { useQuery } from "@tanstack/react-query";
 import { EntityServiceRegistry } from "../models/EntityServiceRegistry";
 import { EntityFieldDisplay } from "./EntityFieldDisplay";
-import { useState, type FC } from "react";
+import { useState } from "react";
 import { cx } from "../utils/cx";
 import { EntityTable } from "./EntityTable";
 
@@ -44,7 +43,7 @@ export const EntityFormField = <
       ) : (
         <EntityFieldDisplay
           fieldKey={params.fieldKey}
-          form={params.form}
+          fieldValue={params.form.getValues(params.fieldKey)}
           service={params.service}
         />
       )}

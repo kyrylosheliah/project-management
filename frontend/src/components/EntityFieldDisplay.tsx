@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
+import type { FieldValues, Path } from "react-hook-form";
 import type { z } from "zod";
 import type { Entity } from "../models/Entity";
 import type { EntityFieldMetadata } from "../models/EntityMetadata";
@@ -13,26 +13,27 @@ export const EntityFieldDisplay = <
   EntityFormValues extends FieldValues,
 >(params: {
   fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
-  form: UseFormReturn<EntityFormValues>;
+  fieldValue: any;
   service: EntityService<T, TSchema>;
 }) => {
   const fieldMetadata = params.service.metadata.fields[params.fieldKey]
-  const fieldValue = params.form.getValues(params.fieldKey);
+  //const fieldValue = params.form.getValues(params.fieldKey);
   if (fieldMetadata.optional) {
-    if (params.form.getValues(params.fieldKey) === null) {
+    //if (params.form.getValues(params.fieldKey) === null) {
+    if (params.fieldValue === null) {
       return NullEntityFieldIcon;
     }
   }
   switch (fieldMetadata.type) {
     case "key":
     //case "number":
-      return `#${new String(fieldValue)}`;
+      return `#${new String(params.fieldValue)}`;
     case "boolean":
-      return fieldValue ? "yes" : "no";
+      return params.fieldValue ? "yes" : "no";
     case "text":
-      return fieldValue;
+      return params.fieldValue;
     case "many_to_one":
-      return <EntityFkField fkId={fieldValue} fieldMetadata={fieldMetadata} />;
+      return <EntityFkField fkId={params.fieldValue} fieldMetadata={fieldMetadata} />;
     //case "one_to_many":
     default:
       throw new Error("Unimplemented type display");
