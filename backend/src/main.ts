@@ -20,7 +20,7 @@ async function bootstrap() {
   const port = configService.get('NESTJS_PORT') || 3000;
 
   app.enableCors({
-    origin: `http://localhost:${configService.get('VITE_PORT') || 5000}`,
+    origin: configService.get('FRONTEND_URL') || "http://localhost:5000",
   });
 
   app.useGlobalPipes(

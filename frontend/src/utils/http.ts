@@ -1,4 +1,4 @@
-export const SERVER = "http://localhost:3000"
+const SERVER = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export const emitHttp = (method: string, path: string) =>
   fetch(SERVER + path, {
