@@ -46,7 +46,7 @@ Must:
 - Column width for long text entity field displaying
 - Enum dropdown input handling
 - CRUD entities
-[- TanStack Query http wrapper
+- TanStack Query http wrapper
 - DTO request validation
 - SOLID, KISS, folder structure
 - Forms with validation: 'add task', 'assign task'
@@ -54,7 +54,6 @@ Must:
 
 Could:
 - EntityFieldDisplay full entity info and link popup on hover
-- Set DB connection string and ports with environment variables
 - @nestjs/jwt auth
 - TanStack Query params for pagination and filtering
 - Decorators for role-based access control

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type JSX } from "react";
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type RowSelectionState, type SortingState } from "@tanstack/react-table";
 import { useNavigate } from "@tanstack/react-router";
 import ButtonText from "../../ui/ButtonText";
 import { type Entity } from "../../entities/Entity";
@@ -79,31 +79,36 @@ export function EntityTable<
     ? params.controlled
     : useState<number | null>(null);
 
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
   let columns: ColumnDef<T>[] = [];
   if (params.edit || params.controlled) {
     columns.push({
       id: "select",
-      header: () => {
-        return (<Checkbox
+      header: ({ table }) => (
+        <Checkbox
           attributes={{
-            onClick: () => setSelectedRowId(null),
-            disabled: selectedRowId === null,
+            disabled: !table.getIsSomeRowsSelected(),
+            checked: table.getIsAllRowsSelected(),
+            onClick: () => table.resetRowSelection(),
           }}
-          indeterminate={selectedRowId !== null}
-        />);
-        },
-      cell: ({ row }) => {
-        const rowId = row.original.id;
-        const checked = selectedRowId === rowId;
-        return (
-          <Checkbox
-            attributes={{
-              checked: checked,
-              onClick: () => setSelectedRowId(checked ? null : rowId),
-            }}
-          />
-        );
-      },
+          indeterminate={table.getIsSomeRowsSelected()}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          attributes={{
+            checked: row.getIsSelected(),
+            disabled: !row.getCanSelect(),
+            onChange: () => {},
+            onClick: row.getToggleSelectedHandler(),
+          }}
+        />
+      ),
+      enableSorting: false,
+      enableResizing: false,
     });
   }
   columns = columns.concat(
@@ -138,9 +143,6 @@ export function EntityTable<
     });
   }
 
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
-
   const table = useReactTable<T>({
     data: entities,
     pageCount,
@@ -148,10 +150,13 @@ export function EntityTable<
     state: {
       sorting,
       globalFilter,
+      rowSelection,
     },
     getCoreRowModel: getCoreRowModel(),
-    //enableRowSelection: true,
-    //enableMultiRowSelection: false,
+    getRowId: (r) => r.id.toString(),
+    enableRowSelection: true,
+    enableMultiRowSelection: false,
+    onRowSelectionChange: setRowSelection,
     //getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     //getSortedRowModel: getSortedRowModel(),
@@ -279,7 +284,7 @@ export function EntityTable<
                       <th
                         key={header.id}
                         onClick={header.column.getToggleSortingHandler()}
-                        className="cursor-pointer pr-1 py-0.5 text-left text-nowrap"
+                        className="cursor-pointer pl-3 py-0.5 text-left text-nowrap"
                       >
                         {flexRender(
                           header.column.columnDef.header,
@@ -296,9 +301,14 @@ export function EntityTable<
               </thead>
               <tbody>
                 {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50">
+                  <tr
+                    key={row.id}
+                    className={
+                      row.getIsSelected() ? "bg-blue-100" : "hover:bg-gray-100"
+                    }
+                  >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="pr-1 py-0.5 border-t">
+                      <td key={cell.id} className="pl-3 py-0.5 border-t">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
