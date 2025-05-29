@@ -1,14 +1,14 @@
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import type { z } from "zod";
-import type { DatabaseType } from "../entities/EntityMetadata";
-import type { Entity } from "../entities/Entity";
-import ButtonIcon from "./ButtonIcon";
-import type EntityService from "../entities/EntityService";
-import { EntityServiceRegistry } from "../entities/EntityServiceRegistry";
-import { EntityFieldDisplay } from "./EntityFieldDisplay";
+import type { DatabaseType } from "../../entities/EntityMetadata";
+import type { Entity } from "../../entities/Entity";
+import ButtonIcon from "../../ui/ButtonIcon";
+import type EntityService from "../../entities/EntityService";
+import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
+import { EntityFieldDisplay } from "./FieldDisplay";
 import { useState } from "react";
-import { cx } from "../utils/cx";
-import { EntityTable } from "./EntityTable";
+import { cx } from "../../utils/cx";
+import { EntityTable } from "./Table";
 
 export const EntityFormField = <
   T extends Entity,

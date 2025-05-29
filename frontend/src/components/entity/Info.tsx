@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { defaultSearchParams, SearchSchema, type SearchParams } from "../types/Search";
-import type { Entity } from "../entities/Entity";
+import { defaultSearchParams } from "../../types/Search";
+import type { Entity } from "../../entities/Entity";
 import type { z } from "zod";
-import ButtonText from "./ButtonText";
-import { EntityForm } from "./EntityForm";
-import { EntityTable } from "./EntityTable";
-import type EntityService from "../entities/EntityService";
-import { EntityServiceRegistry } from "../entities/EntityServiceRegistry";
+import ButtonText from "../../ui/ButtonText";
+import { EntityForm } from "./Form";
+import { EntityTable } from "./Table";
+import type EntityService from "../../entities/EntityService";
+import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
 
 export const EntityInfo = <
   T extends Entity,

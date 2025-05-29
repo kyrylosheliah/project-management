@@ -3,12 +3,18 @@ import { cx } from "../utils/cx";
 
 type ButtonIconType = undefined | "danger";
 
-const styleButtonIcon = (type: ButtonIconType) => {
+const styleButtonIcon = (type: ButtonIconType, disabled?: boolean) => {
   switch (type) {
     case "danger":
-      return "text-red-500";
+      return cx(
+        "text-red-500 bg-red-100",
+        !disabled && "hover:text-white hover:bg-red-500"
+      );
     case undefined:
-      return "text-white";
+      return cx(
+        "text-black bg-gray-100",
+        !disabled && "hover:text-white hover:bg-black"
+      );
   }
 };
 
@@ -16,20 +22,20 @@ export default function ButtonIcon(params: {
   props?: ComponentProps<"button">;
   type?: ButtonIconType;
   children: React.ReactNode,
-  className: string;
+  className?: string;
 }) {
   return (
     <button
       {...params.props}
       className={cx(
-        "text-white font-medium text-sm text-nowrap",
+        "font-medium text-sm text-nowrap",
         "relative text-center flex items-center justify-center",
         "p-2.5 rounded-lg",
-        "bg-gray-700 hover:bg-black disabled:opacity-30",
+        "disabled:opacity-30",
         "",
-        styleButtonIcon(params.type),
+        styleButtonIcon(params.type, params.props?.disabled),
+        params.props && params.props.className,
         params.className,
-        params.props && params.props.className
       )}
     >
       <div className="absolute left-0 top-0 right-0 bottom-0 flex justify-center items-center">

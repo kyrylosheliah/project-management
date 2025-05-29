@@ -1,4 +1,4 @@
-import { BadgeIcon } from "../../components/BadgeIcon";
+import { BadgeIcon } from "../../ui/BadgeIcon";
 import type { Project } from "./type";
 
 export const ProjectBadge = (e: Project) => {

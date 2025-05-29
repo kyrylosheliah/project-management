@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { EntityInfo } from '../components/EntityInfo';
+import { EntityInfo } from '../components/entity/Info';
 import { ProjectService } from '../entities/project/service';
 
 export const Route = createFileRoute('/project/$id')({

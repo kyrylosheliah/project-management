@@ -2,11 +2,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import type { Entity } from "../entities/Entity";
-import { ProjectService } from "../entities/project/service";
-import type EntityService from "../entities/EntityService";
-import ButtonText from "./ButtonText";
-import { EntityFormField } from "./EntityFormField";
+import type { Entity } from "../../entities/Entity";
+import { ProjectService } from "../../entities/project/service";
+import type EntityService from "../../entities/EntityService";
+import ButtonText from "../../ui/ButtonText";
+import { EntityFormField } from "./FormField";
 
 export const EntityForm = <
   T extends Entity,
@@ -64,24 +64,26 @@ export const EntityForm = <
           service={params.service}
         />
       ))}
-      <div className="flex flex-row justify-between items-center">
-        <ButtonText
-          props={{
-            onClick: () => form.reset(),
-            className: "self-end",
-          }}
-        >
-          Reset
-        </ButtonText>
-        <ButtonText
-          props={{
-            type: "submit",
-            className: "self-end",
-          }}
-        >
-          Apply
-        </ButtonText>
-      </div>
+      {params.edit && (
+        <div className="flex flex-row justify-between items-center">
+          <ButtonText
+            props={{
+              onClick: () => form.reset(),
+              className: "self-end",
+            }}
+          >
+            Reset
+          </ButtonText>
+          <ButtonText
+            props={{
+              type: "submit",
+              className: "self-end",
+            }}
+          >
+            Apply
+          </ButtonText>
+        </div>
+      )}
     </RootTag>
   );
 };

@@ -2,14 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type JSX } from "react";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
 import { useNavigate } from "@tanstack/react-router";
-import ButtonText from "./ButtonText";
-import { type Entity } from "../entities/Entity";
-import { defaultSearchParams, SearchSchema, type SearchParams, type SearchResponse } from "../types/Search";
-import ButtonIcon from "./ButtonIcon";
+import ButtonText from "../../ui/ButtonText";
+import { type Entity } from "../../entities/Entity";
+import { defaultSearchParams, SearchSchema, type SearchParams, type SearchResponse } from "../../types/Search";
+import ButtonIcon from "../../ui/ButtonIcon";
 import type { z } from "zod";
-import type EntityService from "../entities/EntityService";
-import { cx } from "../utils/cx";
-import { EntityFieldDisplay } from "./EntityFieldDisplay";
+import type EntityService from "../../entities/EntityService";
+import { cx } from "../../utils/cx";
+import { EntityFieldDisplay } from "./FieldDisplay";
+import { Checkbox } from "../../ui/Checkbox";
 
 const mixInSearchFilter = (
   search: SearchParams,
@@ -82,41 +83,24 @@ export function EntityTable<
   if (params.edit || params.controlled) {
     columns.push({
       id: "select",
-      header: () => (
-        <ButtonIcon
-          props={{
+      header: () => {
+        return (<Checkbox
+          attributes={{
             onClick: () => setSelectedRowId(null),
             disabled: selectedRowId === null,
           }}
-          className="w-6 h-6"
-        >
-          <svg
-            className="w-6 h-6"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 12h14"
-            />
-          </svg>
-        </ButtonIcon>
-      ),
+          indeterminate={selectedRowId !== null}
+        />);
+        },
       cell: ({ row }) => {
         const rowId = row.original.id;
         const checked = selectedRowId === rowId;
         return (
-          <input
-            type="radio"
-            checked={checked}
-            onChange={() => setSelectedRowId(checked ? null : rowId)}
+          <Checkbox
+            attributes={{
+              checked: checked,
+              onClick: () => setSelectedRowId(checked ? null : rowId),
+            }}
           />
         );
       },
@@ -178,19 +162,91 @@ export function EntityTable<
   return (
     <div
       className={cx(
-        "p-4 max-w-3xl gap-4 flex flex-col items-center",
+        "p-2 max-w-3xl gap-2 flex flex-col items-center rounded-md",
         params.className
       )}
     >
-      <div className="gap-4 flex flex-row items-center w-full max-w-md">
+      <div className="w-full h-8 gap-2 flex flex-row justify-between items-center">
+        <ButtonIcon props={{ disabled: isPending }} className="w-8 h-8">
+          <svg
+            className="w-6 h-6"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 12h14m-7 7V5"
+            />
+          </svg>
+        </ButtonIcon>
+        {selectedRowId !== null && (
+          <>
+            <ButtonIcon
+              className="w-8 h-8"
+              props={{
+                onClick: () => {},
+              }}
+            >
+              <svg
+                className="w-6 h-6"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M18 5V4a1 1 0 0 0-1-1H8.914a1 1 0 0 0-.707.293L4.293 7.207A1 1 0 0 0 4 7.914V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5M9 3v4a1 1 0 0 1-1 1H4m11.383.772 2.745 2.746m1.215-3.906a2.089 2.089 0 0 1 0 2.953l-6.65 6.646L9 17.95l.739-3.692 6.646-6.646a2.087 2.087 0 0 1 2.958 0Z"
+                />
+              </svg>
+            </ButtonIcon>
+            <ButtonIcon
+              className="w-8 h-8"
+              type="danger"
+              props={{
+                onClick: () => {},
+              }}
+            >
+              <svg
+                className="w-6 h-6"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
+                />
+              </svg>
+            </ButtonIcon>
+          </>
+        )}
         <input
           type="text"
           placeholder="Search..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          className="p-2 border rounded w-full"
+          className="px-2 w-full h-full border rounded-md"
         />
-        <ButtonIcon className="w-10 h-10">
+        <ButtonIcon className="w-8 h-8">
           <svg
             className="w-6 h-6"
             aria-hidden="true"
@@ -210,33 +266,6 @@ export function EntityTable<
         </ButtonIcon>
       </div>
 
-      <div className="w-full flex flex-row justify-between">
-        <div className="self-start">
-          <ButtonText props={{ disabled: isPending }}>
-            {`New ${metadata.singular} ...`}
-          </ButtonText>
-        </div>
-        {selectedRowId !== null && (
-          <div>
-            <ButtonText
-              props={{
-                onClick: () => {},
-              }}
-            >
-              Edit ...
-            </ButtonText>
-            <ButtonText
-              type="danger"
-              props={{
-                onClick: () => {},
-              }}
-            >
-              Delete ...
-            </ButtonText>
-          </div>
-        )}
-      </div>
-
       {isPending ? (
         <p>Loading ...</p>
       ) : data && entities.length ? (
@@ -250,7 +279,7 @@ export function EntityTable<
                       <th
                         key={header.id}
                         onClick={header.column.getToggleSortingHandler()}
-                        className="cursor-pointer px-4 py-2 text-left"
+                        className="cursor-pointer pr-1 py-0.5 text-left text-nowrap"
                       >
                         {flexRender(
                           header.column.columnDef.header,
@@ -269,7 +298,7 @@ export function EntityTable<
                 {table.getRowModel().rows.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50">
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-2 border-t">
+                      <td key={cell.id} className="pr-1 py-0.5 border-t">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -281,27 +310,61 @@ export function EntityTable<
               </tbody>
             </table>
           </div>
-          <div className="gap-4 flex flex-row items-center">
-            <ButtonText
+          <div className="gap-2 flex flex-row justify-between items-center">
+            <ButtonIcon
               props={{
                 onClick: () => table.previousPage(),
                 disabled: !table.getCanPreviousPage(),
               }}
+              className="w-8 h-8"
             >
-              Previous
-            </ButtonText>
+              <svg
+                className="w-6 h-6"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="m14 8-4 4 4 4"
+                />
+              </svg>
+            </ButtonIcon>
             <span>
               Page {table.getState().pagination.pageIndex + 1} of{" "}
               {table.getPageCount()}
             </span>
-            <ButtonText
+            <ButtonIcon
               props={{
                 onClick: () => table.nextPage(),
                 disabled: !table.getCanNextPage(),
               }}
+              className="w-8 h-8"
             >
-              Next
-            </ButtonText>
+              <svg
+                className="w-6 h-6"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="m10 16 4-4-4-4"
+                />
+              </svg>
+            </ButtonIcon>
           </div>
         </div>
       ) : (

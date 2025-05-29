@@ -10,8 +10,8 @@ export const BadgeIcon = (params: {
     <div
       {...params.props}
       className={cx(
-        "px-1 py-0.5 rounded-md",
-        "gap-1 inline-flex items-center",
+        "px-0.5 py-0.25 rounded-md text-sm",
+        "gap-0.25 inline-flex items-center",
         "bg-gray-100 text-gray-800 border border-gray-300"
       )}
     >

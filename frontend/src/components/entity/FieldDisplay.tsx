@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import type { FieldValues, Path } from "react-hook-form";
 import type { z } from "zod";
-import type { Entity } from "../entities/Entity";
-import type { EntityFieldMetadata } from "../entities/EntityMetadata";
-import type EntityService from "../entities/EntityService";
-import { EntityServiceRegistry } from "../entities/EntityServiceRegistry";
-import ButtonIcon from "./ButtonIcon";
+import type { Entity } from "../../entities/Entity";
+import type { EntityFieldMetadata } from "../../entities/EntityMetadata";
+import type EntityService from "../../entities/EntityService";
+import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
+import ButtonIcon from "../../ui/ButtonIcon";
 
 export const EntityFieldDisplay = <
   T extends Entity,
