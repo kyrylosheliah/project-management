@@ -1,4 +1,4 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useRouter, useSearch } from "@tanstack/react-router";
 import { SearchSchema, type SearchParams } from "../types/Search";
 import { EntityTable } from "../components/entity/Table";
 import { ProjectService } from "../entities/project/service";
@@ -18,10 +18,21 @@ export default function ProjectsPage() {
     strict: true,
   }) as SearchParams;
 
+  const router = useRouter();
+
   return (<div>
     <EntityTable
       service={ProjectService}
-      search={{ value: search, set: (_) => {} }}
+      searchParams={{
+        value: search,
+        set: (nextSearch: SearchParams) => {
+          router.navigate({
+            to: Route.fullPath,
+            search: nextSearch,
+            replace: true,
+          });
+        },
+      }}
     />
   </div>);
 }

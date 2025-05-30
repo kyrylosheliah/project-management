@@ -1,9 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import type { Entity } from "../../entities/Entity";
-import { ProjectService } from "../../entities/project/service";
 import type EntityService from "../../entities/EntityService";
 import ButtonText from "../../ui/ButtonText";
 import { EntityFormField } from "./FormField";
@@ -16,7 +14,8 @@ export const EntityForm = <
   entity: T;
   service: EntityService<T, TSchema>,
 }) => {
-  const metadata = ProjectService.metadata;
+  const service = params.service;
+  const metadata = params.service.metadata;
 
   const defaultFormFields = params.service.getFormFields(params.entity);
 
@@ -27,18 +26,9 @@ export const EntityForm = <
     defaultValues: defaultFormFields,
   });
 
-  const queryClient = useQueryClient();
-  const mutation = useMutation<any, Error, EntityFormValues>({
-    mutationFn: (newValues: EntityFormValues): Promise<any> =>
-      params.service.put(params.entity.id, newValues),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`${metadata.apiPrefix}/${params.entity.id}`] });
-      alert(`${metadata.singular} updated!`);
-      form.reset();
-    },
-    onError: () => {
-      alert("Failed to update the project.");
-    }
+  const mutation = service.useUpdate(() => {
+    alert(`${metadata.singular} updated!`);
+    form.reset();
   });
 
   const RootTag = params.edit ? "form" : "div";

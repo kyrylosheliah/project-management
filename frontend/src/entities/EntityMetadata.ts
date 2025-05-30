@@ -55,7 +55,7 @@ export const getDefaultDBTypeValue = (
     case "key":
       return 0;
     case "many_to_one":
-      return {};
+      return 0;
     case "text":
       return "";
     case "boolean":

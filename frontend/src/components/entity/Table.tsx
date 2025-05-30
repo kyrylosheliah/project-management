@@ -1,39 +1,30 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState, type JSX } from "react";
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type RowSelectionState, type SortingState } from "@tanstack/react-table";
+import { useCallback, useEffect, useMemo, useState, type JSX } from "react";
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type PaginationState, type RowSelectionState, type SortingState } from "@tanstack/react-table";
 import { useNavigate } from "@tanstack/react-router";
 import ButtonText from "../../ui/ButtonText";
 import { type Entity } from "../../entities/Entity";
-import { defaultSearchParams, SearchSchema, type SearchParams, type SearchResponse } from "../../types/Search";
+import { SearchSchema, searchStatesToParameters, type SearchParams } from "../../types/Search";
 import ButtonIcon from "../../ui/ButtonIcon";
 import type { z } from "zod";
 import type EntityService from "../../entities/EntityService";
 import { cx } from "../../utils/cx";
 import { EntityFieldDisplay } from "./FieldDisplay";
 import { Checkbox } from "../../ui/Checkbox";
-
-const mixInSearchFilter = (
-  search: SearchParams,
-  filter: { key: string, value: any },
-): SearchParams => {
-  let temp: any = { ...search };
-  temp.criteria[filter.key] = filter.value;
-  return temp as SearchParams;
-};
+import { useQuery } from "@tanstack/react-query";
 
 export function EntityTable<
   T extends Entity,
   TSchema extends z.ZodObject<z.ZodRawShape>,
 >(params: {
-  controlled?: [
+  pickerState?: [
     number | null,
     React.Dispatch<React.SetStateAction<number | null>>,
   ];
-  filter?: { key: string; value: any };
+  relationFilter?: { key: string; value: any };
   service: EntityService<T, TSchema>;
-  search?: { // currently, it has 1 use case - search query url parameter
+  searchParams: {
     value: SearchParams;
-    set: (partialSearch: Partial<SearchParams>) => void;
+    set: (nextSearch: SearchParams) => void;
   };
   edit?: boolean;
   className?: string;
@@ -41,50 +32,127 @@ export function EntityTable<
   const metadata = params.service.metadata;
   const service = params.service;
 
-  const [rawSearch, setRawSearch] = params.search
-    ? [params.search.value, params.search.set]
-    : useState<SearchParams>(
-        params.filter
-          ? mixInSearchFilter(defaultSearchParams, params.filter)
-          : defaultSearchParams
-      );
-  // todo: add external search setter handling
-  const [search, setSearch] = [
-    rawSearch,
-    (partialState: Partial<SearchParams>) => {
-      const result = SearchSchema.safeParse({ ...search, ...partialState });
-      if (result.success) {
-        setRawSearch(result.data);
-      } else {
-        alert(`Invalid search parameters, ${result.error.format()}`);
-      }
-    }
-  ];
+  const sourceParameters = params.searchParams.value;
 
-  const searchPath = metadata.apiPrefix + "/search";
-  const { data, isPending } = useQuery<SearchResponse<T>>({
-    queryKey: [searchPath],
-    queryFn: () => service.search(search, searchPath),
+  const pagination: PaginationState = useMemo(() => ({
+    pageIndex: sourceParameters.pageNo - 1,
+    pageSize: 2, // sourceParameters.pageSize || 10,
+  }), [sourceParameters.pageNo, sourceParameters.pageSize]);
+
+  const [optimisticSorting, setOptimisticSorting] = useState<SortingState>(() => [{
+    id: sourceParameters.orderByColumn,
+    desc: !sourceParameters.ascending,
+  }]);
+
+  useEffect(() => {
+    const newSorting = [{
+      id: sourceParameters.orderByColumn,
+      desc: !sourceParameters.ascending,
+    }];
+    setOptimisticSorting(newSorting);
+  }, [sourceParameters.orderByColumn, sourceParameters.ascending]);
+
+  const sorting: SortingState = useMemo(() => [{
+    id: sourceParameters.orderByColumn,
+    desc: !sourceParameters.ascending,
+  },],[sourceParameters.pageNo, sourceParameters.ascending]);
+
+  const [globalFilter, setGlobalFilter] = useState<string>("");
+
+  const searchParams: SearchParams = useMemo(() => {
+    let nextSearch = searchStatesToParameters({
+      pagination,
+      sorting,
+      globalFilter,
+    });
+    if (params.relationFilter) {
+      nextSearch.criteria[params.relationFilter.key] =
+        params.relationFilter.value;
+    }
+    const result = SearchSchema.safeParse(nextSearch);
+    if (!result.success) {
+      console.log(result.error.format());
+      console.log(nextSearch);
+      alert(`Invalid search parameters, ${result.error.format()}`);
+      return sourceParameters;
+    }
+    return nextSearch;
+  }, [
+    pagination,
+    sorting,
+    globalFilter,
+    params.relationFilter,
+    sourceParameters,
+  ]);
+
+  // Update searchParams when table state changes
+  const handlePaginationChange = useCallback(
+    (updater: any) => {
+      const newPagination =
+        typeof updater === "function" ? updater(pagination) : updater;
+      const nextSearch = {
+        ...searchParams,
+        pageNo: newPagination.pageIndex + 1,
+        pageSize: newPagination.pageSize,
+      };
+      params.searchParams.set(nextSearch);
+    },
+    [params.searchParams.value, pagination, sourceParameters]
+  );
+
+  const handleSortingChange = useCallback(
+    (updater: any) => {
+      const newSorting: SortingState =
+        typeof updater === "function" ? updater(sorting) : updater;
+      setOptimisticSorting(newSorting);
+      const sortingColumn = newSorting[0]?.id || searchParams.orderByColumn;
+      const nextSearch = {
+        ...searchParams,
+        orderByColumn: sortingColumn,
+        ascending: !newSorting[0]?.desc,
+        criteria: { [sortingColumn]: globalFilter },
+      };
+      params.searchParams.set(nextSearch);
+    },
+    [params.searchParams.value, optimisticSorting, pagination, sourceParameters]
+  );
+
+  const { data, isPending } = useQuery({
+    queryKey: [metadata.apiPrefix, "search", searchParams],
+    queryFn: () => service.search(searchParams),
+    enabled: true,
+    placeholderData: (prev) => prev,
   });
-  const entities = data ? data.items : [];
-  const pageCount = data ? data.pageCount : 0;
+
+  const entities = data !== undefined ? data.items : [];
+  const pageCount = data !== undefined ? data.pageCount : 0;
+
+  useEffect(() => {
+    console.log("pagination changed");
+  }, [pagination]);
+  useEffect(() => {
+    console.log("sorting changed");
+  }, [sorting]);
+  useEffect(() => {
+    console.log("globalFilter changed");
+  }, [globalFilter]);
+
+  console.log("Table");
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-
-  const [selectedRowId, setSelectedRowId] = params.controlled
-    ? params.controlled
-    : useState<number | null>(null);
-
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
+  if (params.pickerState !== undefined) {
+    useEffect(() => {
+      const [_, setSelectedRowId] = params.pickerState!;
+      const selectedRows = entities.filter((row) => rowSelection[row.id]);
+      setSelectedRowId(selectedRows.length ? selectedRows[0].id : null);
+    }, [rowSelection]);
+  }
+
   let columns: ColumnDef<T>[] = [];
-  if (params.edit || params.controlled) {
+  if (params.edit || params.pickerState) {
     columns.push({
       id: "select",
       header: ({ table }) => (
@@ -92,6 +160,7 @@ export function EntityTable<
           attributes={{
             disabled: !table.getIsSomeRowsSelected(),
             checked: table.getIsAllRowsSelected(),
+            onChange: () => {},
             onClick: () => table.resetRowSelection(),
           }}
           indeterminate={table.getIsSomeRowsSelected()}
@@ -119,7 +188,7 @@ export function EntityTable<
         <EntityFieldDisplay
           fieldKey={key as any}
           fieldValue={context.getValue()}
-          service={params.service}
+          service={service}
         />
       ),
     }))
@@ -148,8 +217,9 @@ export function EntityTable<
     pageCount,
     columns,
     state: {
-      sorting,
+      sorting: optimisticSorting,
       globalFilter,
+      pagination,
       rowSelection,
     },
     getCoreRowModel: getCoreRowModel(),
@@ -157,11 +227,15 @@ export function EntityTable<
     enableRowSelection: true,
     enableMultiRowSelection: false,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: handlePaginationChange, //setPagination,
     //getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange, //setSorting,
     //getSortedRowModel: getSortedRowModel(),
-    //onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: setGlobalFilter,
     //getFilteredRowModel: getFilteredRowModel(),
+    manualPagination: true,
+    manualFiltering: true,
+    manualSorting: true,
   });
 
   return (
@@ -191,7 +265,7 @@ export function EntityTable<
             />
           </svg>
         </ButtonIcon>
-        {selectedRowId !== null && (
+        {table.getIsSomeRowsSelected() && (
           <>
             <ButtonIcon
               className="w-8 h-8"
@@ -273,7 +347,7 @@ export function EntityTable<
 
       {isPending ? (
         <p>Loading ...</p>
-      ) : data && entities.length ? (
+      ) : (entities.length > 0) ? (
         <div className="w-full">
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto border">
@@ -286,14 +360,18 @@ export function EntityTable<
                         onClick={header.column.getToggleSortingHandler()}
                         className="cursor-pointer pl-3 py-0.5 text-left text-nowrap"
                       >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {{
-                          asc: " 🔼",
-                          desc: " 🔽",
-                        }[header.column.getIsSorted() as string] ?? null}
+                        <div className="flex flex-row flex-nowrap">
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {
+                            {
+                              asc: <ChevronDown />,
+                              desc: <ChevronUp />,
+                            }[header.column.getIsSorted() as string]
+                          }
+                        </div>
                       </th>
                     ))}
                   </tr>
@@ -328,27 +406,10 @@ export function EntityTable<
               }}
               className="w-8 h-8"
             >
-              <svg
-                className="w-6 h-6"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m14 8-4 4 4 4"
-                />
-              </svg>
+              <ChevronLeft />
             </ButtonIcon>
             <span>
-              Page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
+              {`Page ${pagination.pageIndex + 1} of ${table.getPageCount()}`}
             </span>
             <ButtonIcon
               props={{
@@ -357,23 +418,7 @@ export function EntityTable<
               }}
               className="w-8 h-8"
             >
-              <svg
-                className="w-6 h-6"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m10 16 4-4-4-4"
-                />
-              </svg>
+              <ChevronRight />
             </ButtonIcon>
           </div>
         </div>
@@ -382,4 +427,84 @@ export function EntityTable<
       )}
     </div>
   );
-};
+}
+
+const ChevronLeft = () => (
+  <svg
+    className="w-6 h-6"
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m14 8-4 4 4 4"
+    />
+  </svg>
+);
+
+const ChevronRight = () => (
+  <svg
+    className="w-6 h-6"
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m10 16 4-4-4-4"
+    />
+  </svg>
+);
+
+const ChevronDown = () => (
+  <svg
+    className="w-24px h-24px text-gray-800 dark:text-white"
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m8 10 4 4 4-4"
+    />
+  </svg>
+);
+
+const ChevronUp = () => (
+  <svg
+    className="w-24px h-24px text-gray-800 dark:text-white"
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m16 14-4-4-4 4"
+    />
+  </svg>
+);

@@ -9,6 +9,7 @@ import { EntityFieldDisplay } from "./FieldDisplay";
 import { useState } from "react";
 import { cx } from "../../utils/cx";
 import { EntityTable } from "./Table";
+import { type SearchParams, defaultSearchParams } from "../../types/Search";
 
 export const EntityFormField = <
   T extends Entity,
@@ -128,10 +129,12 @@ const EntityFormFieldInput = <
     case "text":
       return <textarea disabled={disabled} className={cx(commonClasses)} />;
     case "many_to_one":
+      const [searchParams, setSearchParams] = useState<SearchParams>(defaultSearchParams);
       return (
         <EntityTable
           service={EntityServiceRegistry[fieldMetadata.apiPrefix!] as any}
-          controlled={entityIdState}
+          searchParams={{ value: searchParams, set: setSearchParams }}
+          pickerState={entityIdState}
           className={cx(commonClasses)}
         />
       );

@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import type { FieldValues, Path } from "react-hook-form";
 import type { z } from "zod";
 import type { Entity } from "../../entities/Entity";
@@ -6,6 +5,7 @@ import type { EntityFieldMetadata } from "../../entities/EntityMetadata";
 import type EntityService from "../../entities/EntityService";
 import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
 import ButtonIcon from "../../ui/ButtonIcon";
+import { BadgeIcon } from "../../ui/BadgeIcon";
 
 export const EntityFieldDisplay = <
   T extends Entity,
@@ -49,16 +49,16 @@ const EntityFkField = (params: {
   fkId: number;
   fieldMetadata: EntityFieldMetadata;
 }) => {
+  if (params.fkId === 0) {
+    return <BadgeIcon children="..." icon="?" />;
+  }
   const fkService = EntityServiceRegistry[params.fieldMetadata.apiPrefix!];
   const fkMetadata = fkService.metadata;
-  const { data, isPending } = useQuery<any>({
-    queryKey: [`${fkMetadata.apiPrefix}/${params.fkId}`],
-    queryFn: () => fkService.get(params.fkId),
-  });
+  const { data, isPending } = fkService.useGet(params.fkId);
   const loadingElement = <div>...</div>;
   return isPending || data === undefined ? (
     loadingElement
   ) : (
-    <div>{fkMetadata.peekComponent(data)}</div>
+    <div>{fkMetadata.peekComponent(data as any)}</div>
   );
 };

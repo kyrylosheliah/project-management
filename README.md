@@ -51,6 +51,8 @@ Must:
 - SOLID, KISS, folder structure
 - Forms with validation: 'add task', 'assign task'
 - Update task status feature
+- Handle backend database querying exceptions
+- Handle database search comparison per field type
 
 Could:
 - EntityFieldDisplay full entity info and link popup on hover
@@ -59,6 +61,9 @@ Could:
 - Decorators for role-based access control
 - docker-compose deployment
 - CI pipeline
+- Filter dictionary object (search fields with column name dropdown)
+- Sorting dictionary object (column retains sorting chevron state)
+- External search parameters state merge solution
 
 Exploration:
 - Project-wide schema defined via OpenAPI Specification

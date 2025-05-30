@@ -1,7 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { defaultSearchParams } from "../../types/Search";
+import { defaultSearchParams, type SearchParams } from "../../types/Search";
 import type { Entity } from "../../entities/Entity";
 import type { z } from "zod";
 import ButtonText from "../../ui/ButtonText";
@@ -22,10 +21,7 @@ export const EntityInfo = <
   const metadata = params.service.metadata;
   const service = params.service;
 
-  const { data, isPending } = useQuery({
-    queryKey: [`${metadata.apiPrefix}/${params.entityId}`],
-    queryFn: () => service.get(params.entityId),
-  });
+  const { data, isPending } = service.useGet(params.entityId);
 
   const [edit, setEdit] = useState(false);
 
@@ -87,13 +83,18 @@ export const EntityInfo = <
       <div className="w-full">
         {metadata.relations &&
           metadata.relations.length &&
-          metadata.relations.map((relation) => (
-            <EntityTable
-              key={`relation_${relation.label}`}
-              service={EntityServiceRegistry[relation.apiPrefix] as any}
-              edit
-            />
-          ))}
+          metadata.relations.map((relation) => {
+            const [searchParams, setSearchParams] =
+              useState<SearchParams>(defaultSearchParams);
+            return (
+              <EntityTable
+                key={`relation_${relation.label}`}
+                searchParams={{ value: searchParams, set: setSearchParams }}
+                service={EntityServiceRegistry[relation.apiPrefix] as any}
+                edit
+              />
+            );
+          })}
       </div>
     </div>
   );

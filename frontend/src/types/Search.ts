@@ -18,3 +18,24 @@ export type SearchResponse<T extends Entity> = {
   pageCount: number;
   items: T[],
 };
+
+export interface SearchState {
+  pagination: { pageIndex: number; pageSize: number };
+  sorting: { id: string; desc: boolean }[];
+  globalFilter?: string;
+}
+
+export const searchStatesToParameters = (state: SearchState) => {
+  const sort = state.sorting?.[0];
+  const criteria: Record<string, any> = {};
+  if (state.globalFilter) {
+    criteria[sort.id || "id"] = state.globalFilter;
+  }
+  return {
+    pageNo: state.pagination.pageIndex + 1,
+    pageSize: state.pagination.pageSize,
+    ascending: sort ? !sort.desc : true,
+    orderByColumn: sort?.id ?? "id",
+    criteria,
+  };
+};
