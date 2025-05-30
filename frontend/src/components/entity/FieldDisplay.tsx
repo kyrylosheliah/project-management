@@ -6,6 +6,7 @@ import type EntityService from "../../entities/EntityService";
 import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
 import ButtonIcon from "../../ui/ButtonIcon";
 import { BadgeIcon } from "../../ui/BadgeIcon";
+import { IconNull } from "../../ui/icons/Null";
 
 export const EntityFieldDisplay = <
   T extends Entity,
@@ -21,7 +22,7 @@ export const EntityFieldDisplay = <
   if (fieldMetadata.optional) {
     //if (params.form.getValues(params.fieldKey) === null) {
     if (params.fieldValue === null) {
-      return NullEntityFieldIcon;
+      return <ButtonIcon className="w-6 h-6" children={<IconNull />} />;
     }
   }
   switch (fieldMetadata.type) {
@@ -39,11 +40,6 @@ export const EntityFieldDisplay = <
       throw new Error("Unimplemented type display");
   }
 };
-
-const NullEntityFieldIcon = (<ButtonIcon
-  className="w-6 h-6"
-  children="?"
-/>);
 
 const EntityFkField = (params: {
   fkId: number;

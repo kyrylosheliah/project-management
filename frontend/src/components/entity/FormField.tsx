@@ -1,15 +1,19 @@
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import type { z } from "zod";
-import type { DatabaseType } from "../../entities/EntityMetadata";
+import { getDefaultDBTypeValue, type DatabaseType } from "../../entities/EntityMetadata";
 import type { Entity } from "../../entities/Entity";
 import ButtonIcon from "../../ui/ButtonIcon";
 import type EntityService from "../../entities/EntityService";
 import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
 import { EntityFieldDisplay } from "./FieldDisplay";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { cx } from "../../utils/cx";
 import { EntityTable } from "./Table";
 import { type SearchParams, defaultSearchParams } from "../../types/Search";
+import { Checkbox } from "../../ui/Checkbox";
+import { IconPlus } from "../../ui/icons/Plus";
+import { IconClose } from "../../ui/icons/Close";
+import { IconNull } from "../../ui/icons/Null";
 
 export const EntityFormField = <
   T extends Entity,
@@ -110,27 +114,52 @@ const EntityFormFieldInput = <
         : "border-gray-300"
   );
 
-  //switch (fieldMetadata.type) {
-
   const fieldMetadata = params.service.metadata.fields[params.fieldKey];
 
   const fieldValue = params.form.getValues(params.fieldKey);
 
+  const defaultValue = params.form.formState.defaultValues !== undefined
+    ? params.form.formState.defaultValues[params.fieldKey] as any
+    : getDefaultDBTypeValue(fieldMetadata);
+
   const disabled = fieldMetadata.constant || fieldMetadata.type === "key";
 
-  // TODO: avoid instantiation with `type === "many_to_one"` scenario
-  const entityIdState = useState<number | null>(fieldValue);
-
+  let inputControl: ReactNode;
   switch (fieldMetadata.type) {
     case "key":
-      return <input disabled={disabled} className={cx(commonClasses)} />;
+      inputControl = (
+        <input
+          {...params.form.register(params.fieldKey)}
+          disabled={disabled}
+          className={cx(commonClasses)}
+        />
+      );
+      break;
     case "boolean":
-      return <input disabled={disabled} className={cx(commonClasses)} />;
+      inputControl = (
+        <Checkbox
+          attributes={{
+            ...params.form.register(params.fieldKey),
+            disabled,
+          }}
+          className={cx(commonClasses)}
+        />
+      );
+      break;
     case "text":
-      return <textarea disabled={disabled} className={cx(commonClasses)} />;
+      inputControl = (
+        <textarea
+          {...params.form.register(params.fieldKey)}
+          disabled={disabled}
+          className={cx(commonClasses)}
+        />
+      );
+      break;
     case "many_to_one":
-      const [searchParams, setSearchParams] = useState<SearchParams>(defaultSearchParams);
-      return (
+      const [searchParams, setSearchParams] =
+        useState<SearchParams>(defaultSearchParams);
+      const entityIdState = useState<number | null>(fieldValue);
+      inputControl = (
         <EntityTable
           service={EntityServiceRegistry[fieldMetadata.apiPrefix!] as any}
           searchParams={{ value: searchParams, set: setSearchParams }}
@@ -138,9 +167,45 @@ const EntityFormFieldInput = <
           className={cx(commonClasses)}
         />
       );
+      break;
     case "enum":
-      return <select className={cx(commonClasses)}></select>;
+      inputControl = (
+        <select className={cx(commonClasses)}>
+          {Object.entries(fieldMetadata.restrictedOptions!).map(
+            ([key, value]) => (
+              <option value={value}>{key}</option>
+            )
+          )}
+        </select>
+      );
+      break;
     default:
-      return <div>unimplemented_input</div>;
+      inputControl = (<div>unimplemented_input</div>);
   }
+
+  const keyOrConst =
+    fieldMetadata.constant === true || fieldMetadata.type === "key";
+
+  return (
+    <>
+      {fieldValue !== null ? (
+        inputControl
+      ) : (
+        <ButtonIcon className="w-6 h-6" children={<IconNull />} />
+      )}
+      {!keyOrConst && fieldMetadata.optional === true && (
+        <ButtonIcon
+          className="shrink-0"
+          children={fieldValue === null ? <IconPlus /> : <IconClose />}
+          props={{
+            onClick: () =>
+              params.form.setValue(
+                params.fieldKey,
+                fieldValue === null ? defaultValue : null
+              ),
+          }}
+        />
+      )}
+    </>
+  );
 };

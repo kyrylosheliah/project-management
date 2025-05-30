@@ -1,12 +1,10 @@
 import type { z } from "zod";
-import { SearchSchema, searchStatesToParameters, type SearchParams, type SearchResponse } from "../types/Search";
+import { type SearchParams, type SearchResponse } from "../types/Search";
 import { emitHttp, emitHttpJson } from "../utils/http";
 import { type Entity } from "./Entity";
 import { type EntityMetadata } from "./EntityMetadata";
 import type { ProjectFormValues } from "./project/form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import type { PaginationState, SortingState } from "@tanstack/react-table";
 
 export default class EntityService<
   T extends Entity,
@@ -39,7 +37,7 @@ export default class EntityService<
       });
   }
 
-  async post(data: TSchema): Promise<boolean> {
+  async create(data: TSchema): Promise<boolean> {
     return emitHttpJson("POST", this.metadata.apiPrefix, data)
       .then((_) => true)
       .catch((reason) => {
@@ -48,7 +46,7 @@ export default class EntityService<
       });
   }
 
-  async put(id: number, data: ProjectFormValues): Promise<boolean> {
+  async update(id: string | number, data: ProjectFormValues): Promise<boolean> {
     return emitHttpJson("put", `${this.metadata.apiPrefix}/${id}`, data)
       .then((_) => true)
       .catch((reason) => {
@@ -57,7 +55,7 @@ export default class EntityService<
       });
   }
 
-  async delete(entityId: number): Promise<void> {
+  async delete(entityId: string | number): Promise<void> {
     if (!confirm("Are you sure you want to delete this project?")) return;
     emitHttpJson("DELETE", `${this.metadata.apiPrefix}/${entityId}`).catch(
       (reason) => {
@@ -66,79 +64,12 @@ export default class EntityService<
     );
   }
 
-  useSearch(params: {
-    defaultValue: SearchParams;
-    relationFilter?: { key: string; value: any };
-    controlled?: {
-      value: SearchParams;
-      set: (nextSearch: SearchParams) => void;
-    };
-  }) {
-    const sourceParameters = params.controlled === undefined
-      ? params.defaultValue
-      : params.controlled.value;
-
-    const [pagination, setPagination] = useState<PaginationState>({
-      pageIndex: sourceParameters.pageNo - 1,
-      pageSize: 2// sourceParameters.pageSize || 10,
-    });
-
-    const [sorting, setSorting] = useState<SortingState>([
-      {
-        id: sourceParameters.orderByColumn,
-        desc: !sourceParameters.ascending,
-      },
-    ]);
-
-    const [globalFilter, setGlobalFilter] = useState<string>("");
-
-    const createSearchParams = () => {
-      let nextSearch = searchStatesToParameters({
-        pagination,
-        sorting,
-        globalFilter,
-      });
-      if (params.relationFilter) {
-        nextSearch.criteria[params.relationFilter.key] =
-          params.relationFilter.value;
-      }
-      const result = SearchSchema.safeParse(nextSearch);
-      if (!result.success) {
-        console.log(result.error.format());
-        console.log(nextSearch);
-        alert(`Invalid search parameters, ${result.error.format()}`);
-        return params.controlled === undefined
-          ? params.defaultValue
-          : params.controlled.value;
-      }
-      return nextSearch;
-    };
-
-    const query = useQuery({
-      queryKey: [
-        this.metadata.apiPrefix,
-        "search",
-        globalFilter,
-        pagination,
-        sorting,
-      ],
-      queryFn: () => this.search(createSearchParams()),
-      enabled: true,
+  useSearch(searchParams: SearchParams) {
+    return useQuery({
+      queryKey: [this.metadata.apiPrefix, "search", searchParams],
+      queryFn: () => this.search(searchParams),
       placeholderData: (prev) => prev,
     });
-
-    return {
-      searchParams: {
-        createSearchParams,
-        pagination,
-        setPagination,
-        sorting,
-        setSorting,
-        globalFilter,
-        setGlobalFilter,
-      },
-      query,
-    };
   }
 
   useGet(entityId: string | number) {
@@ -152,7 +83,7 @@ export default class EntityService<
   useCreate(onSuccess?: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: (data: TSchema) => this.post(data),
+      mutationFn: (data: TSchema) => this.create(data),
       onSuccess: () => {
         onSuccess?.();
         queryClient.invalidateQueries({
@@ -166,7 +97,7 @@ export default class EntityService<
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: ({ id, data }: { id: number; data: ProjectFormValues }) =>
-        this.put(id, data),
+        this.update(id, data),
       onSuccess: (_, variables) => {
         onSuccess?.();
         queryClient.invalidateQueries({
@@ -182,8 +113,8 @@ export default class EntityService<
   useDelete(onSuccess?: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: ({ id, data }: { id: number; data: ProjectFormValues }) =>
-        this.put(id, data),
+      mutationFn: ({ id }: { id: number }) =>
+        this.delete(id),
       onSuccess: (_, variables) => {
         onSuccess?.();
         queryClient.invalidateQueries({

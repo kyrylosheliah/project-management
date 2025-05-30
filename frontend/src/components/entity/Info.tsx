@@ -62,7 +62,14 @@ export const EntityInfo = <
               )}
             </div>
             <div className="w-full">
-              <EntityForm edit={edit} entity={data} service={service} />
+              <EntityForm
+                edit={edit}
+                entity={data}
+                service={service}
+                onSubmit={(newFields) => {
+                  service.update(params.entityId, newFields);
+                }}
+              />
             </div>
             {edit && (
               <div className="self-end m-t-4 flex flex-col justify-end gap-4">

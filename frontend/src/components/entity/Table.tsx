@@ -10,7 +10,14 @@ import type EntityService from "../../entities/EntityService";
 import { cx } from "../../utils/cx";
 import { EntityFieldDisplay } from "./FieldDisplay";
 import { Checkbox } from "../../ui/Checkbox";
-import { useQuery } from "@tanstack/react-query";
+import { IconChevronDown } from "../../ui/icons/ChevronDown";
+import { IconChevronLeft } from "../../ui/icons/ChevronLeft";
+import { IconChevronRight } from "../../ui/icons/ChevronRight";
+import { IconChevronUp } from "../../ui/icons/ChevronUp";
+import { IconEdit } from "../../ui/icons/IconEdit";
+import { IconMagnifier } from "../../ui/icons/Magnifier";
+import { IconPlus } from "../../ui/icons/Plus";
+import { IconTrashBin } from "../../ui/icons/TrashBin";
 
 export function EntityTable<
   T extends Entity,
@@ -117,27 +124,10 @@ export function EntityTable<
     [params.searchParams.value, optimisticSorting, pagination, sourceParameters]
   );
 
-  const { data, isPending } = useQuery({
-    queryKey: [metadata.apiPrefix, "search", searchParams],
-    queryFn: () => service.search(searchParams),
-    enabled: true,
-    placeholderData: (prev) => prev,
-  });
+  const { data, isPending } = service.useSearch(searchParams);
 
   const entities = data !== undefined ? data.items : [];
   const pageCount = data !== undefined ? data.pageCount : 0;
-
-  useEffect(() => {
-    console.log("pagination changed");
-  }, [pagination]);
-  useEffect(() => {
-    console.log("sorting changed");
-  }, [sorting]);
-  useEffect(() => {
-    console.log("globalFilter changed");
-  }, [globalFilter]);
-
-  console.log("Table");
 
   const navigate = useNavigate();
 
@@ -247,23 +237,7 @@ export function EntityTable<
     >
       <div className="w-full h-8 gap-2 flex flex-row justify-between items-center">
         <ButtonIcon props={{ disabled: isPending }} className="w-8 h-8">
-          <svg
-            className="w-6 h-6"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 12h14m-7 7V5"
-            />
-          </svg>
+          <IconPlus />
         </ButtonIcon>
         {table.getIsSomeRowsSelected() && (
           <>
@@ -273,23 +247,7 @@ export function EntityTable<
                 onClick: () => {},
               }}
             >
-              <svg
-                className="w-6 h-6"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M18 5V4a1 1 0 0 0-1-1H8.914a1 1 0 0 0-.707.293L4.293 7.207A1 1 0 0 0 4 7.914V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5M9 3v4a1 1 0 0 1-1 1H4m11.383.772 2.745 2.746m1.215-3.906a2.089 2.089 0 0 1 0 2.953l-6.65 6.646L9 17.95l.739-3.692 6.646-6.646a2.087 2.087 0 0 1 2.958 0Z"
-                />
-              </svg>
+              <IconEdit />
             </ButtonIcon>
             <ButtonIcon
               className="w-8 h-8"
@@ -298,23 +256,7 @@ export function EntityTable<
                 onClick: () => {},
               }}
             >
-              <svg
-                className="w-6 h-6"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
-                />
-              </svg>
+              <IconTrashBin />
             </ButtonIcon>
           </>
         )}
@@ -326,22 +268,7 @@ export function EntityTable<
           className="px-2 w-full h-full border rounded-md"
         />
         <ButtonIcon className="w-8 h-8">
-          <svg
-            className="w-6 h-6"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeWidth="2"
-              d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
-            />
-          </svg>
+          <IconMagnifier />
         </ButtonIcon>
       </div>
 
@@ -367,8 +294,8 @@ export function EntityTable<
                           )}
                           {
                             {
-                              asc: <ChevronDown />,
-                              desc: <ChevronUp />,
+                              asc: <IconChevronDown />,
+                              desc: <IconChevronUp />,
                             }[header.column.getIsSorted() as string]
                           }
                         </div>
@@ -398,7 +325,7 @@ export function EntityTable<
               </tbody>
             </table>
           </div>
-          <div className="gap-2 flex flex-row justify-between items-center">
+          <div className="mt-2 gap-4 flex flex-row justify-center items-center">
             <ButtonIcon
               props={{
                 onClick: () => table.previousPage(),
@@ -406,7 +333,7 @@ export function EntityTable<
               }}
               className="w-8 h-8"
             >
-              <ChevronLeft />
+              <IconChevronLeft />
             </ButtonIcon>
             <span>
               {`Page ${pagination.pageIndex + 1} of ${table.getPageCount()}`}
@@ -418,7 +345,7 @@ export function EntityTable<
               }}
               className="w-8 h-8"
             >
-              <ChevronRight />
+              <IconChevronRight />
             </ButtonIcon>
           </div>
         </div>
@@ -428,83 +355,3 @@ export function EntityTable<
     </div>
   );
 }
-
-const ChevronLeft = () => (
-  <svg
-    className="w-6 h-6"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="m14 8-4 4 4 4"
-    />
-  </svg>
-);
-
-const ChevronRight = () => (
-  <svg
-    className="w-6 h-6"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="m10 16 4-4-4-4"
-    />
-  </svg>
-);
-
-const ChevronDown = () => (
-  <svg
-    className="w-24px h-24px text-gray-800 dark:text-white"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="m8 10 4 4 4-4"
-    />
-  </svg>
-);
-
-const ChevronUp = () => (
-  <svg
-    className="w-24px h-24px text-gray-800 dark:text-white"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="m16 14-4-4-4 4"
-    />
-  </svg>
-);

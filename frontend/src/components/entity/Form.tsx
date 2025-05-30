@@ -11,24 +11,19 @@ export const EntityForm = <
   TSchema extends z.ZodObject<z.ZodRawShape>
 >(params: {
   edit?: boolean;
+  onSubmit: (newFields: any) => void;
   entity: T;
   service: EntityService<T, TSchema>,
 }) => {
-  const service = params.service;
   const metadata = params.service.metadata;
-
-  const defaultFormFields = params.service.getFormFields(params.entity);
 
   type EntityFormValues = z.infer<typeof metadata.formSchema>;
 
+  const defaultFormFields = params.service.getFormFields(params.entity);
+
   const form = useForm<EntityFormValues>({
     resolver: zodResolver(metadata.formSchema),
-    defaultValues: defaultFormFields,
-  });
-
-  const mutation = service.useUpdate(() => {
-    alert(`${metadata.singular} updated!`);
-    form.reset();
+    defaultValues: defaultFormFields as any,
   });
 
   const RootTag = params.edit ? "form" : "div";
@@ -36,7 +31,7 @@ export const EntityForm = <
   const onSubmit = params.edit
     ? form.handleSubmit((newFields: EntityFormValues) => {
         console.log("onSubmit");
-        mutation.mutate(newFields);
+        params.onSubmit(newFields);
       })
     : undefined;
 
@@ -45,12 +40,12 @@ export const EntityForm = <
       onSubmit={onSubmit}
       className="flex flex-col gap-3 text-align-start"
     >
-      {Object.keys(defaultFormFields).map((keyString: string) => (
+      {Object.keys(defaultFormFields).map((key: string) => (
         <EntityFormField
           edit={params.edit}
-          key={`entity_form_field_${keyString}`}
+          key={`entity_form_field_${key}`}
           form={form}
-          fieldKey={keyString as keyof EntityFormValues}
+          fieldKey={key as any}
           service={params.service}
         />
       ))}
