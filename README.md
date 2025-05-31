@@ -42,15 +42,10 @@ npm run dev
 ## Drawing board / TODOs
 
 Must:
-- Entity picking with modal form
+- Fix reset function per form field
 - Column width for long text entity field displaying
-- Enum dropdown input handling
-- CRUD entities
-- TanStack Query http wrapper
 - DTO request validation
 - SOLID, KISS, folder structure
-- Forms with validation: 'add task', 'assign task'
-- Update task status feature
 - Handle backend database querying exceptions
 - Handle database search comparison per field type
 
@@ -61,8 +56,8 @@ Could:
 - Decorators for role-based access control
 - docker-compose deployment
 - CI pipeline
-- Filter dictionary object (search fields with column name dropdown)
-- Sorting dictionary object (column retains sorting chevron state)
+- Filtering dictionary object (search fields with column name dropdown)
+- Sorting dictionary object (every column retains sorting chevron state)
 - External search parameters state merge solution
 
 Exploration:

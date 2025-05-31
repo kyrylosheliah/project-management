@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { defaultSearchParams, type SearchParams } from "../../types/Search";
 import type { Entity } from "../../entities/Entity";
@@ -16,7 +16,7 @@ export const EntityInfo = <
   entityId: string;
   service: EntityService<T, TSchema>;
 }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const metadata = params.service.metadata;
   const service = params.service;
@@ -39,8 +39,7 @@ export const EntityInfo = <
             <div className="mb-4 w-full flex items-center justify-between">
               <ButtonText
                 props={{
-                  onClick: () =>
-                    navigate({ to: "/projects", search: defaultSearchParams }),
+                  onClick: () => router.history.go(-1)
                 }}
               >
                 ← Back
@@ -85,7 +84,7 @@ export const EntityInfo = <
                     className: "self-end",
                   }}
                 >
-                  Delete Project...
+                  {`Delete ${metadata.singular}...`}
                 </ButtonText>
               </div>
             )}
@@ -100,6 +99,7 @@ export const EntityInfo = <
               useState<SearchParams>(defaultSearchParams);
             return (
               <EntityTable
+                traverse
                 key={`relation_${relation.label}`}
                 searchParams={{ value: searchParams, set: setSearchParams }}
                 service={EntityServiceRegistry[relation.apiPrefix] as any}

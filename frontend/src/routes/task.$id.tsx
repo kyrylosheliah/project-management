@@ -1,9 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
+import { EntityInfo } from '../components/entity/Info';
+import { TaskService } from '../entities/task/service';
 
 export const Route = createFileRoute('/task/$id')({
-  component: RouteComponent,
-})
+  component: TaskPage,
+});
 
-function RouteComponent() {
-  return <div>Hello "/task/$id"!</div>
+function TaskPage() {
+  const { id } = Route.useParams();
+
+  return (
+    <div>
+      Hello "/task/$id"!
+      <EntityInfo entityId={id} service={TaskService} />
+    </div>
+  );
 }

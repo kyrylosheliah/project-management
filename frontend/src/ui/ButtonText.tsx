@@ -19,6 +19,7 @@ export default function ButtonText(props: {
 }) {
   return (
     <button
+      type="button"
       {...props.props}
       className={cx(
         "items-center p-1 rounded-lg text-nowrap disabled:opacity-30 underline",

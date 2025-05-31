@@ -58,7 +58,6 @@ export const EntityForm = <
         <div className="flex flex-row justify-between items-center">
           <ButtonText
             props={{
-              type: "button",
               onClick: () => form.reset(),
               className: "self-end",
             }}

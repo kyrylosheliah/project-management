@@ -37,13 +37,13 @@ export const EntityFieldDisplay = <
       return params.fieldValue ? "yes" : "no";
     case "text":
       return params.fieldValue;
-    case "many_to_one":
+    case "fkey":
       return <EntityFkField fkId={params.fieldValue} fieldMetadata={fieldMetadata} />;
     case "enum":
-      const entry = Object.keys(fieldMetadata.restrictedOptions!).find(
-        (key) => (fieldMetadata.restrictedOptions as any)[key] === params.fieldValue
+      return (
+        (fieldMetadata.enum!.options as any)[params.fieldValue] ||
+        params.fieldValue
       );
-      return entry || params.fieldValue;
     default:
       return "Unimplemented type display";
   }
@@ -54,7 +54,13 @@ const EntityFkField = (params: {
   fieldMetadata: EntityFieldMetadata;
 }) => {
   if (params.fkId === 0) {
-    return <BadgeIcon children="..." icon="?" />;
+    return (
+      <BadgeIcon
+        className="fw-700"
+        children={<div className="pr-2">...</div>}
+        icon={ <div className="flex justify-center items-center">?</div> }
+      />
+    );
   }
   const fkService = EntityServiceRegistry[params.fieldMetadata.apiPrefix!];
   const fkMetadata = fkService.metadata;

@@ -25,6 +25,12 @@ export interface SearchState {
   globalFilter?: string;
 }
 
+export const validateSearch = (search: Record<string, unknown>) => {
+  const result = SearchSchema.safeParse(search);
+  if (!result.success) throw new Error('Invalid query params');
+  return result.data;
+};
+
 export const searchStatesToParameters = (state: SearchState) => {
   const sort = state.sorting?.[0];
   const criteria: Record<string, any> = {};

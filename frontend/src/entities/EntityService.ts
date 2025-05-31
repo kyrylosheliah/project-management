@@ -84,10 +84,11 @@ export default class EntityService<
     return useMutation({
       mutationFn: (data: Omit<T, 'id'>) => this.create(data),
       onSuccess: () => {
-        onSuccess?.();
         queryClient.invalidateQueries({
           queryKey: [this.metadata.apiPrefix, "search"],
         });
+        alert(`${this.metadata.singular} was successfully created`);
+        onSuccess?.();
       },
     });
   }
@@ -98,13 +99,14 @@ export default class EntityService<
       mutationFn: (params: { id: string | number; data: Omit<T, 'id'> }) =>
         this.update(params.id, params.data),
       onSuccess: (_, variables) => {
-        onSuccess?.();
         queryClient.invalidateQueries({
           queryKey: [this.metadata.apiPrefix, "search"],
         });
         queryClient.invalidateQueries({
           queryKey: [this.metadata.apiPrefix, "get", variables.id],
         });
+        alert(`${this.metadata.singular} was successfully updated`);
+        onSuccess?.();
       },
     });
   }
@@ -115,13 +117,14 @@ export default class EntityService<
       mutationFn: (id: string | number) =>
         this.delete(id),
       onSuccess: (_, variables) => {
-        onSuccess?.();
         queryClient.invalidateQueries({
           queryKey: [this.metadata.apiPrefix, "search"],
         });
         queryClient.invalidateQueries({
           queryKey: [this.metadata.apiPrefix, "get", variables],
         });
+        alert(`${this.metadata.singular} was successfully deleted`);
+        onSuccess?.();
       },
     });
   }

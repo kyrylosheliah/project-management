@@ -18,7 +18,10 @@ import { IconEdit } from "../../ui/icons/Edit";
 import { IconMagnifier } from "../../ui/icons/Magnifier";
 import { IconPlus } from "../../ui/icons/Plus";
 import { IconTrashBin } from "../../ui/icons/TrashBin";
-import { EntityModal } from "./Modal";
+import { Modal } from "../../ui/Modal";
+import type { ReactNode } from "react";
+import { EntityForm } from "./Form";
+import { entityDefaultValues } from "../../entities/EntityMetadata";
 
 export function EntityTable<
   T extends Entity,
@@ -35,6 +38,7 @@ export function EntityTable<
     set: (nextSearch: SearchParams) => void;
   };
   edit?: boolean;
+  traverse?: boolean;
   className?: string;
 }): JSX.Element {
   const metadata = params.service.metadata;
@@ -93,7 +97,6 @@ export function EntityTable<
     sourceParameters,
   ]);
 
-  // Update searchParams when table state changes
   const handlePaginationChange = useCallback(
     (updater: any) => {
       const newPagination =
@@ -195,7 +198,7 @@ export function EntityTable<
       ),
     }))
   );
-  if (params.edit !== true) {
+  if (params.traverse) {
     columns.push({
       id: "open",
       header: "Info",
@@ -229,12 +232,9 @@ export function EntityTable<
     enableRowSelection: true,
     enableMultiRowSelection: false,
     onRowSelectionChange: setRowSelection,
-    onPaginationChange: handlePaginationChange, //setPagination,
-    //getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: handleSortingChange, //setSorting,
-    //getSortedRowModel: getSortedRowModel(),
+    onPaginationChange: handlePaginationChange,
+    onSortingChange: handleSortingChange,
     onGlobalFilterChange: setGlobalFilter,
-    //getFilteredRowModel: getFilteredRowModel(),
     manualPagination: true,
     manualFiltering: true,
     manualSorting: true,
@@ -255,7 +255,7 @@ export function EntityTable<
       )}
     >
       <div className="w-full h-8 gap-2 flex flex-row justify-between items-center">
-        <EntityModal
+        <EntityModalForm
           opened={createOpened}
           heading={`Edit ${metadata.singular}`}
           close={() => setCreateOpened(false)}
@@ -278,7 +278,7 @@ export function EntityTable<
         </ButtonIcon>
         {table.getIsSomeRowsSelected() && (
           <>
-            <EntityModal
+            <EntityModalForm
               opened={updateOpened}
               heading={`Edit ${metadata.singular}`}
               close={() => setUpdateOpened(false)}
@@ -404,3 +404,54 @@ export function EntityTable<
     </div>
   );
 }
+
+const EntityModalForm = <
+  T extends Entity,
+  TSchema extends z.ZodType<Omit<T, "id">>,
+>(params: {
+  opened: boolean;
+  icon?: ReactNode;
+  heading: ReactNode;
+  close: () => void;
+  update?: (id: number, newValues: Omit<T, 'id'>) => Promise<boolean>;
+  create?: (newValues: Omit<T, 'id'>) => Promise<boolean>;
+  entityId: number | null;
+  service: EntityService<T, TSchema>;
+}) => {
+  const { data, isPending, isSuccess } = params.service.useGet(
+    params.entityId || 0
+  );
+  return (
+    <Modal
+      opened={params.opened}
+      icon={params.icon}
+      heading={params.heading}
+      close={params.close}
+      className="flex flex-col items-center justify-center backdrop-blur-sm bg-transparent"
+    >
+      {params.create === undefined ? (
+        isPending ? (
+          <div>Loading ...</div>
+        ) : isSuccess ? (
+          <EntityForm
+            edit
+            service={params.service}
+            entity={data as T}
+            onSubmit={(newFields: Omit<T, "id">) =>
+              params.update!(params.entityId!, newFields)
+            }
+          />
+        ) : (
+          <div>Error</div>
+        )
+      ) : (
+        <EntityForm
+          edit
+          service={params.service}
+          entity={entityDefaultValues(params.service.metadata.fields)}
+          onSubmit={(newFields: Omit<T, "id">) => params.create!(newFields)}
+        />
+      )}
+    </Modal>
+  );
+};

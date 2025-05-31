@@ -1,15 +1,11 @@
 import { createFileRoute, useRouter, useSearch } from "@tanstack/react-router";
-import { SearchSchema, type SearchParams } from "../types/Search";
+import { validateSearch, type SearchParams } from "../types/Search";
 import { EntityTable } from "../components/entity/Table";
 import { ProjectService } from "../entities/project/service";
 
 export const Route = createFileRoute('/projects')({
   component: ProjectsPage,
-  validateSearch: (search) => {
-    const result = SearchSchema.safeParse(search);
-    if (!result.success) throw new Error('Invalid query params');
-    return result.data;
-  },
+  validateSearch: validateSearch,
 });
 
 export default function ProjectsPage() {
@@ -22,6 +18,7 @@ export default function ProjectsPage() {
 
   return (<div>
     <EntityTable
+      traverse
       service={ProjectService}
       searchParams={{
         value: search,

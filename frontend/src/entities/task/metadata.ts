@@ -17,19 +17,22 @@ export const TaskMetadata: EntityMetadata<
     description: { label: "Description", type: "text", nullable: true },
     projectId: {
       label: "Project",
-      type: "many_to_one",
+      type: "fkey",
       apiPrefix: "/project",
     },
     assigneeId: {
       label: "Assignee",
-      type: "many_to_one",
+      type: "fkey",
       nullable: true,
       apiPrefix: "/user",
     },
     status: {
       label: "Task status",
       type: "enum",
-      restrictedOptions: TaskStatusOptions,
+      enum: {
+        default: "todo",
+        options: TaskStatusOptions,
+      },
     },
   },
   formSchema: TaskFormSchema,

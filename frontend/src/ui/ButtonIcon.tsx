@@ -26,6 +26,8 @@ export default function ButtonIcon(params: {
 }) {
   return (
     <button
+      // type={params.props?.type || "button"}
+      type="button"
       {...params.props}
       className={cx(
         "font-medium text-sm text-nowrap",

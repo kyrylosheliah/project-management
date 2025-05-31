@@ -28,13 +28,15 @@ export type EntityFieldMetadata = {
   constant?: boolean;
   nullable?: boolean;
   apiPrefix?: keyof typeof EntityServiceRegistry;
-  restrictedOptions?: object;
+  enum?: {
+    default: any;
+    options: object;
+  };
 };
 
 export type DatabaseType = 
   | "key"
-  | "many_to_one"
-  //| "one_to_many" // are specified via relations field
+  | "fkey"
   | "enum"
   //| "datetime"
   //| "date"
@@ -54,12 +56,14 @@ export const fieldMetadataDefaultValue = (
   switch (fieldMetadata.type) {
     case "key":
       return 0;
-    case "many_to_one":
+    case "fkey":
       return 0;
     case "text":
       return "";
     case "boolean":
       return false;
+    case "enum":
+      return fieldMetadata.enum!.default;
     default:
       return null;
   }
@@ -71,12 +75,14 @@ export const fieldMetadataInitialValue = (
   switch (fieldMetadata.type) {
     case "key":
       return 0;
-    case "many_to_one":
+    case "fkey":
       return 0;
     case "text":
       return "";
     case "boolean":
       return false;
+    case "enum":
+      return fieldMetadata.enum!.default;
     default:
       return null;
   }

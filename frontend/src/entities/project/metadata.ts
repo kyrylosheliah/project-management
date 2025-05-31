@@ -16,7 +16,7 @@ export const ProjectMetadata: EntityMetadata<
     description: { label: "Description", type: "text", nullable: true },
     ownerId: {
       label: "Owner",
-      type: "many_to_one",
+      type: "fkey",
       apiPrefix: "/user",
     },
   },
