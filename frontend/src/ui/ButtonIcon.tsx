@@ -12,8 +12,8 @@ const styleButtonIcon = (type: ButtonIconType, disabled?: boolean) => {
       );
     case undefined:
       return cx(
-        "text-black bg-gray-100",
-        !disabled && "hover:text-white hover:bg-black"
+        "text-gray-600",
+        !disabled && "hover:text-black hover:bg-gray-200"
       );
   }
 };

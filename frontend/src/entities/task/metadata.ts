@@ -28,7 +28,7 @@ export const TaskMetadata: EntityMetadata<
     },
     status: {
       label: "Task status",
-      type: "text",
+      type: "enum",
       restrictedOptions: TaskStatusOptions,
     },
   },

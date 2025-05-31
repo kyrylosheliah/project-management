@@ -1,4 +1,3 @@
-import type { FieldValues, Path } from "react-hook-form";
 import type { z } from "zod";
 import type { Entity } from "../../entities/Entity";
 import type { EntityFieldMetadata } from "../../entities/EntityMetadata";
@@ -7,10 +6,11 @@ import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
 import ButtonIcon from "../../ui/ButtonIcon";
 import { BadgeIcon } from "../../ui/BadgeIcon";
 import { IconNull } from "../../ui/icons/Null";
+import type { FieldValues, Path } from "react-hook-form";
 
 export const EntityFieldDisplay = <
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TSchema extends z.ZodType<Omit<T, 'id'>>,
   EntityFormValues extends FieldValues,
 >(params: {
   fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
@@ -18,11 +18,15 @@ export const EntityFieldDisplay = <
   service: EntityService<T, TSchema>;
 }) => {
   const fieldMetadata = params.service.metadata.fields[params.fieldKey]
-  //const fieldValue = params.form.getValues(params.fieldKey);
-  if (fieldMetadata.optional) {
-    //if (params.form.getValues(params.fieldKey) === null) {
+  if (fieldMetadata.nullable) {
     if (params.fieldValue === null) {
-      return <ButtonIcon className="w-6 h-6" children={<IconNull />} />;
+      return (
+        <ButtonIcon
+          className="w-6 h-6"
+          props={{ disabled: true }}
+          children={<IconNull />}
+        />
+      );
     }
   }
   switch (fieldMetadata.type) {
@@ -35,14 +39,18 @@ export const EntityFieldDisplay = <
       return params.fieldValue;
     case "many_to_one":
       return <EntityFkField fkId={params.fieldValue} fieldMetadata={fieldMetadata} />;
-    //case "one_to_many":
+    case "enum":
+      const entry = Object.keys(fieldMetadata.restrictedOptions!).find(
+        (key) => (fieldMetadata.restrictedOptions as any)[key] === params.fieldValue
+      );
+      return entry || params.fieldValue;
     default:
-      throw new Error("Unimplemented type display");
+      return "Unimplemented type display";
   }
 };
 
 const EntityFkField = (params: {
-  fkId: number;
+  fkId: string | number;
   fieldMetadata: EntityFieldMetadata;
 }) => {
   if (params.fkId === 0) {

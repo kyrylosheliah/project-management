@@ -18,10 +18,11 @@ import { IconEdit } from "../../ui/icons/Edit";
 import { IconMagnifier } from "../../ui/icons/Magnifier";
 import { IconPlus } from "../../ui/icons/Plus";
 import { IconTrashBin } from "../../ui/icons/TrashBin";
+import { EntityModal } from "./Modal";
 
 export function EntityTable<
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TSchema extends z.ZodType<Omit<T, 'id'>>,
 >(params: {
   pickerState?: [
     number | null,
@@ -43,7 +44,7 @@ export function EntityTable<
 
   const pagination: PaginationState = useMemo(() => ({
     pageIndex: sourceParameters.pageNo - 1,
-    pageSize: 2, // sourceParameters.pageSize || 10,
+    pageSize: sourceParameters.pageSize || 10,
   }), [sourceParameters.pageNo, sourceParameters.pageSize]);
 
   const [optimisticSorting, setOptimisticSorting] = useState<SortingState>(() => [{
@@ -131,15 +132,26 @@ export function EntityTable<
 
   const navigate = useNavigate();
 
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>(
+    params.pickerState !== undefined && params.pickerState[0] !== null
+      ? {
+          [params.pickerState[0]]: true,
+        }
+      : {}
+  );
 
-  if (params.pickerState !== undefined) {
-    useEffect(() => {
-      const [_, setSelectedRowId] = params.pickerState!;
-      const selectedRows = entities.filter((row) => rowSelection[row.id]);
-      setSelectedRowId(selectedRows.length ? selectedRows[0].id : null);
-    }, [rowSelection]);
-  }
+  const [selectedRowId, setSelectedRowId] =
+    params.pickerState !== undefined
+      ? params.pickerState
+      : useState<number | null>(null);
+
+  useEffect(() => {
+    console.log("rowSelection", rowSelection);
+    const selectedRows = entities.filter((row) => rowSelection[row.id]);
+    if (selectedRows.length) {
+      setSelectedRowId(selectedRows[0].id);
+    }
+  }, [rowSelection]);
 
   let columns: ColumnDef<T>[] = [];
   if (params.edit || params.pickerState) {
@@ -177,7 +189,7 @@ export function EntityTable<
       cell: (context) => (
         <EntityFieldDisplay
           fieldKey={key as any}
-          fieldValue={context.getValue()}
+          fieldValue={context.getValue() as any}
           service={service}
         />
       ),
@@ -228,6 +240,13 @@ export function EntityTable<
     manualSorting: true,
   });
 
+  const [updateOpened, setUpdateOpened] = useState(false);
+  const updateMutation = service.useUpdate();
+  const [createOpened, setCreateOpened] = useState(false);
+  const createMutation = service.useCreate();
+
+  const deleteMuatation = service.useDelete();
+
   return (
     <div
       className={cx(
@@ -236,28 +255,58 @@ export function EntityTable<
       )}
     >
       <div className="w-full h-8 gap-2 flex flex-row justify-between items-center">
-        <ButtonIcon props={{ disabled: isPending }} className="w-8 h-8">
+        <EntityModal
+          opened={createOpened}
+          heading={`Edit ${metadata.singular}`}
+          close={() => setCreateOpened(false)}
+          create={(newValues) =>
+            createMutation.mutateAsync(newValues, {
+              onSuccess: () => setCreateOpened(false),
+            })
+          }
+          entityId={selectedRowId}
+          service={service}
+        />
+        <ButtonIcon
+          className="w-8 h-8"
+          props={{
+            disabled: isPending,
+            onClick: () => setCreateOpened(true),
+          }}
+        >
           <IconPlus />
         </ButtonIcon>
         {table.getIsSomeRowsSelected() && (
           <>
+            <EntityModal
+              opened={updateOpened}
+              heading={`Edit ${metadata.singular}`}
+              close={() => setUpdateOpened(false)}
+              update={(id, newValues) =>
+                updateMutation.mutateAsync({ id, data: newValues })
+              }
+              entityId={selectedRowId}
+              service={service}
+            />
             <ButtonIcon
               className="w-8 h-8"
               props={{
-                onClick: () => {},
+                onClick: () => setUpdateOpened(true),
               }}
             >
               <IconEdit />
             </ButtonIcon>
-            <ButtonIcon
-              className="w-8 h-8"
-              type="danger"
-              props={{
-                onClick: () => {},
-              }}
-            >
-              <IconTrashBin />
-            </ButtonIcon>
+            {selectedRowId !== null && (
+              <ButtonIcon
+                className="w-8 h-8"
+                type="danger"
+                props={{
+                  onClick: () => deleteMuatation.mutateAsync(selectedRowId),
+                }}
+              >
+                <IconTrashBin />
+              </ButtonIcon>
+            )}
           </>
         )}
         <input
@@ -274,7 +323,7 @@ export function EntityTable<
 
       {isPending ? (
         <p>Loading ...</p>
-      ) : (entities.length > 0) ? (
+      ) : entities.length > 0 ? (
         <div className="w-full">
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto border">

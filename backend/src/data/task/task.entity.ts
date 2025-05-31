@@ -33,8 +33,8 @@ export class Task {
   @Exclude()
   assignee: User;
 
-  @Column()
-  assigneeId: number;
+  @Column({ nullable: true })
+  assigneeId: number | null;
 
   @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.TODO })
   status: TaskStatus;

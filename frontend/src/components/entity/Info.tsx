@@ -11,7 +11,7 @@ import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
 
 export const EntityInfo = <
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>
+  TSchema extends z.ZodType<Omit<T, 'id'>>
 >(params: {
   entityId: string;
   service: EntityService<T, TSchema>;
@@ -26,6 +26,8 @@ export const EntityInfo = <
   const [edit, setEdit] = useState(false);
 
   const loadingElement = <div>Loading ...</div>;
+
+  const updateMutation = service.useUpdate();
 
   return (
     <div className="flex flex-col md:flex-row md:max-w-screen-lg md:w-auto">
@@ -66,9 +68,12 @@ export const EntityInfo = <
                 edit={edit}
                 entity={data}
                 service={service}
-                onSubmit={(newFields) => {
-                  service.update(params.entityId, newFields);
-                }}
+                onSubmit={(newFields) =>
+                  updateMutation.mutate({
+                    id: params.entityId,
+                    data: newFields,
+                  })
+                }
               />
             </div>
             {edit && (

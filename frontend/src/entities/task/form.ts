@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { TaskStatusOptions } from "./field-status";
+import type { Task } from "./type";
 
-export const TaskFormSchema = z.object({
+export const TaskFormSchema: z.ZodType<Omit<Task, 'id'>>  = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().nullable(),
   projectId: z.number({ required_error: "OwnerIsRequired" }),

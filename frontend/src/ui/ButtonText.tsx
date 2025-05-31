@@ -13,7 +13,7 @@ const styleButton = (type: ButtonType) => {
 };
 
 export default function ButtonText(props: {
-  props: ComponentProps<"button">;
+  props?: ComponentProps<"button">;
   type?: ButtonType;
   children: React.ReactNode,
 }) {
@@ -23,7 +23,7 @@ export default function ButtonText(props: {
       className={cx(
         "items-center p-1 rounded-lg text-nowrap disabled:opacity-30 underline",
         styleButton(props.type),
-        props.props.className
+        props.props?.className
       )}
       children={props.children}
     />

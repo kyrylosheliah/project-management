@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 export type EntityMetadata<
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>
+  TSchema extends z.ZodType<Omit<T, 'id'>>,
 > = {
   apiPrefix: string;
   singular: string;
@@ -65,7 +65,6 @@ export const fieldMetadataDefaultValue = (
   }
 };
 
-
 export const fieldMetadataInitialValue = (
   fieldMetadata: EntityFieldMetadata,
 ) => {
@@ -81,4 +80,14 @@ export const fieldMetadataInitialValue = (
     default:
       return null;
   }
+};
+
+export const entityDefaultValues = <T extends Entity>(fields: {
+  [column in keyof T]: EntityFieldMetadata;
+}) => {
+  let temp: any = {};
+  Object.keys(fields).map((key) => {
+    temp[key] = fieldMetadataDefaultValue(fields[key as keyof T]);
+  });
+  return temp as T;
 };

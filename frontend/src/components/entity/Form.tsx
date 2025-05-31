@@ -5,31 +5,36 @@ import type { Entity } from "../../entities/Entity";
 import type EntityService from "../../entities/EntityService";
 import ButtonText from "../../ui/ButtonText";
 import { EntityFormField } from "./FormField";
+import { useEffect } from "react";
 
 export const EntityForm = <
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>
+  TSchema extends z.ZodType<Omit<T, 'id'>>,
 >(params: {
   edit?: boolean;
-  onSubmit: (newFields: any) => void;
+  onSubmit: (newFields: Omit<T, 'id'>) => void;
   entity: T;
   service: EntityService<T, TSchema>,
 }) => {
   const metadata = params.service.metadata;
 
-  type EntityFormValues = z.infer<typeof metadata.formSchema>;
-
   const defaultFormFields = params.service.getFormFields(params.entity);
 
-  const form = useForm<EntityFormValues>({
+  const form = useForm<Omit<T, 'id'>>({
     resolver: zodResolver(metadata.formSchema),
     defaultValues: defaultFormFields as any,
   });
 
+  useEffect(() => {
+    if (params.entity) {
+      form.reset(defaultFormFields);
+    }
+  }, [params.entity, form]);
+
   const RootTag = params.edit ? "form" : "div";
 
   const onSubmit = params.edit
-    ? form.handleSubmit((newFields: EntityFormValues) => {
+    ? form.handleSubmit((newFields: Omit<T, 'id'>) => {
         console.log("onSubmit");
         params.onSubmit(newFields);
       })

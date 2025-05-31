@@ -3,19 +3,18 @@ import { type SearchParams, type SearchResponse } from "../types/Search";
 import { emitHttp, emitHttpJson } from "../utils/http";
 import { type Entity } from "./Entity";
 import { type EntityMetadata } from "./EntityMetadata";
-import type { ProjectFormValues } from "./project/form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default class EntityService<
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TSchema extends z.ZodType<Omit<T, 'id'>>,
 > {
   constructor(readonly metadata: EntityMetadata<T, TSchema>) {}
 
-  getFormFields(entity: T): TSchema {
+  getFormFields(entity: T): Omit<T, 'id'> {
     const temp: any = { ...entity };
     delete temp.id;
-    return temp as TSchema;
+    return temp as Omit<T, 'id'>;
   }
 
   async search(search: SearchParams): Promise<SearchResponse<T>> {
@@ -37,7 +36,7 @@ export default class EntityService<
       });
   }
 
-  async create(data: TSchema): Promise<boolean> {
+  async create(data: Omit<T, 'id'>): Promise<boolean> {
     return emitHttpJson("POST", this.metadata.apiPrefix, data)
       .then((_) => true)
       .catch((reason) => {
@@ -46,7 +45,7 @@ export default class EntityService<
       });
   }
 
-  async update(id: string | number, data: ProjectFormValues): Promise<boolean> {
+  async update(id: string | number, data: Omit<T, 'id'>): Promise<boolean> {
     return emitHttpJson("put", `${this.metadata.apiPrefix}/${id}`, data)
       .then((_) => true)
       .catch((reason) => {
@@ -83,7 +82,7 @@ export default class EntityService<
   useCreate(onSuccess?: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: (data: TSchema) => this.create(data),
+      mutationFn: (data: Omit<T, 'id'>) => this.create(data),
       onSuccess: () => {
         onSuccess?.();
         queryClient.invalidateQueries({
@@ -96,8 +95,8 @@ export default class EntityService<
   useUpdate(onSuccess?: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: ({ id, data }: { id: number; data: ProjectFormValues }) =>
-        this.update(id, data),
+      mutationFn: (params: { id: string | number; data: Omit<T, 'id'> }) =>
+        this.update(params.id, params.data),
       onSuccess: (_, variables) => {
         onSuccess?.();
         queryClient.invalidateQueries({
@@ -113,7 +112,7 @@ export default class EntityService<
   useDelete(onSuccess?: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: ({ id }: { id: number }) =>
+      mutationFn: (id: string | number) =>
         this.delete(id),
       onSuccess: (_, variables) => {
         onSuccess?.();
@@ -121,7 +120,7 @@ export default class EntityService<
           queryKey: [this.metadata.apiPrefix, "search"],
         });
         queryClient.invalidateQueries({
-          queryKey: [this.metadata.apiPrefix, "get", variables.id],
+          queryKey: [this.metadata.apiPrefix, "get", variables],
         });
       },
     });

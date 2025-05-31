@@ -6,34 +6,32 @@ import ButtonIcon from "../../ui/ButtonIcon";
 import type EntityService from "../../entities/EntityService";
 import { EntityServiceRegistry } from "../../entities/EntityServiceRegistry";
 import { EntityFieldDisplay } from "./FieldDisplay";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cx } from "../../utils/cx";
 import { EntityTable } from "./Table";
 import { type SearchParams, defaultSearchParams } from "../../types/Search";
 import { Checkbox } from "../../ui/Checkbox";
 import { IconPlus } from "../../ui/icons/Plus";
-import { IconClose } from "../../ui/icons/Close";
 import { IconNull } from "../../ui/icons/Null";
+import ButtonText from "../../ui/ButtonText";
+import { IconEdit } from "../../ui/icons/Edit";
+import { IconCheck } from "../../ui/icons/Check";
 
 export const EntityFormField = <
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TSchema extends z.ZodType<Omit<T, 'id'>>,
   EntityFormValues extends FieldValues
 >(params: {
   edit?: boolean;
   service: EntityService<T, TSchema>;
   form: UseFormReturn<EntityFormValues>;
-  fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
+  fieldKey: (keyof T) & (keyof TSchema) & Path<EntityFormValues>;
 }) => {
   const metadata = params.service.metadata;
 
   const errors = params.form.formState.errors;
 
   const fieldMetadata = params.service.metadata.fields[params.fieldKey];
-  
-  const initialValue = (params.form.formState.defaultValues !== undefined
-    && params.form.formState.defaultValues[params.fieldKey] as any)
-      || fieldMetadataInitialValue(fieldMetadata);
 
   const keyOrConst =
     fieldMetadata.constant === true || fieldMetadata.type === "key";
@@ -43,28 +41,50 @@ export const EntityFormField = <
     name: params.fieldKey,
   });
 
+  const isDirty: boolean | undefined = useMemo(
+    () => (params.form.formState.dirtyFields as any)[params.fieldKey],
+    [params.form.formState.dirtyFields]
+  );
+  const initialValue = (params.form.formState.defaultValues !== undefined
+    && params.form.formState.defaultValues[params.fieldKey] as any)
+      || fieldMetadataInitialValue(fieldMetadata);
+
   return (
     <div>
-      <div className="gap-2 flex flex-row items-center">
-        <label
-          htmlFor={params.fieldKey.toString()}
-          children={metadata.fields[params.fieldKey].label}
-          className="block text-sm fw-700 text-gray-900"
-        />
-        <EntityFieldIcon fieldType={metadata.fields[params.fieldKey].type} />
-        {params.edit && !keyOrConst && fieldMetadata.nullable === true && (
-          <ButtonIcon
-            className="w-6 h-6"
-            children={fieldValue === null ? <IconPlus /> : <IconClose />}
-            props={{
-              type: "button",
-              onClick: () =>
-                params.form.setValue(
-                  params.fieldKey,
-                  fieldValue === null ? initialValue : null
-                ),
-            }}
+      <div className="gap-2 flex flex-row items-center justify-between">
+        <div className="gap-2 flex flex-row items-center">
+          <label
+            htmlFor={params.fieldKey.toString()}
+            children={metadata.fields[params.fieldKey].label}
+            className="block text-sm fw-700 text-gray-900"
           />
+          <EntityFieldIcon fieldType={metadata.fields[params.fieldKey].type} />
+        </div>
+        {params.edit && !keyOrConst && (
+          <div className="flex flex-row gap-2">
+            {isDirty && (
+              <ButtonText
+                props={{
+                  onClick: () => {
+                    params.form.setValue(params.fieldKey, initialValue);
+                    params.form.trigger();
+                  },
+                }}
+              >
+                reset?
+              </ButtonText>
+            )}
+            {fieldMetadata.nullable === true && fieldValue !== null && (
+              <ButtonText
+                props={{
+                  onClick: () =>
+                    params.form.setValue(params.fieldKey, null as any),
+                }}
+              >
+                unset?
+              </ButtonText>
+            )}
+          </div>
         )}
       </div>
       {params.edit ? (
@@ -121,7 +141,7 @@ const EntityFieldIcon = (params: {
 
 const EntityFieldInput = <
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TSchema extends z.ZodType<Omit<T, 'id'>>,
   EntityFormValues extends FieldValues,
 >(params: {
   fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
@@ -129,20 +149,24 @@ const EntityFieldInput = <
   service: EntityService<T, TSchema>;
 }) => {
   const errors = params.form.formState.errors;
-  const isDirty: boolean | undefined = (
-    params.form.formState.dirtyFields as any
-  )[params.fieldKey];
-  const commonClasses = cx(
-    "border w-full",
-    errors[params.fieldKey]
-      ? "border-red-400"
-      : isDirty
-        ? "border-yellow-600"
-        : "border-gray-300"
+  const isDirty: boolean | undefined = useMemo(
+    () => (params.form.formState.dirtyFields as any)[params.fieldKey],
+    [params.form.formState.dirtyFields]
+  );
+  const commonClasses = useMemo(
+    () =>
+      cx(
+        "border w-full",
+        errors[params.fieldKey]
+          ? "border-red-400"
+          : isDirty
+            ? "border-yellow-600"
+            : "border-gray-300"
+      ),
+    [params.form.formState.errors, isDirty]
   );
   const fieldMetadata = params.service.metadata.fields[params.fieldKey];
   const disabled = fieldMetadata.constant || fieldMetadata.type === "key";
-  const fieldValue = params.form.getValues(params.fieldKey);
   switch (fieldMetadata.type) {
     case "key":
       return (
@@ -171,16 +195,43 @@ const EntityFieldInput = <
         />
       );
     case "many_to_one":
+      const fieldValue = useWatch({
+        control: params.form.control,
+        name: params.fieldKey,
+      });
       const [searchParams, setSearchParams] =
         useState<SearchParams>(defaultSearchParams);
-      const entityIdState = useState<number | null>(fieldValue);
+      const [entityId, setEntityId] = useState<number | null>(fieldValue);
+      useEffect(() => {
+        console.log(
+          `many_to_one ${params.service.metadata.apiPrefix}[${params.fieldKey}]: entityId is ${entityId}`
+        );
+        params.form.setValue(params.fieldKey, entityId as any);
+      }, [entityId]);
+      const [edit, setEdit] = useState<boolean>(false);
       return (
-        <EntityTable
-          service={EntityServiceRegistry[fieldMetadata.apiPrefix!] as any}
-          searchParams={{ value: searchParams, set: setSearchParams }}
-          pickerState={entityIdState}
-          className={cx(commonClasses)}
-        />
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-row gap-2">
+            <EntityFieldDisplay
+              fieldKey={params.fieldKey}
+              fieldValue={fieldValue}
+              service={params.service}
+            />
+            <ButtonIcon
+              className="w-6 h-6"
+              children={edit ? <IconCheck /> : <IconEdit />}
+              props={{ onClick: () => setEdit((prev) => !prev) }}
+            />
+          </div>
+          {edit && (
+            <EntityTable
+              service={EntityServiceRegistry[fieldMetadata.apiPrefix!] as any}
+              searchParams={{ value: searchParams, set: setSearchParams }}
+              pickerState={[entityId, setEntityId]}
+              className={cx(commonClasses)}
+            />
+          )}
+        </div>
       );
     case "enum":
       return (
@@ -193,13 +244,13 @@ const EntityFieldInput = <
         </select>
       );
     default:
-      return (<div>unimplemented_input</div>);
+      return <div>unimplemented_input</div>;
   }
 };
 
 const EntityFieldControl = <
   T extends Entity,
-  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TSchema extends z.ZodType<Omit<T, 'id'>>,
   EntityFormValues extends FieldValues,
 >(params: {
   fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
@@ -211,20 +262,36 @@ const EntityFieldControl = <
     name: params.fieldKey,
   });
 
+  const fieldMetadata = params.service.metadata.fields[params.fieldKey];
+  
+  const initialValue = (params.form.formState.defaultValues !== undefined
+    && params.form.formState.defaultValues[params.fieldKey] as any)
+      || fieldMetadataInitialValue(fieldMetadata);
+
+  const keyOrConst =
+    fieldMetadata.constant === true || fieldMetadata.type === "key";
+
   return (
     <div className="flex flex-row gap-4">
       {fieldValue !== null ? (
-        <EntityFieldInput
-          {...params}
+        <EntityFieldInput {...params} />
+      ) : keyOrConst || fieldMetadata.nullable === false ? (
+        <ButtonIcon
+          className="w-6 h-6"
+          children={<IconNull />}
+          props={{
+            type: "button",
+            disabled: true,
+          }}
         />
       ) : (
         <ButtonIcon
           props={{
             type: "button",
-            disabled: true,
+            onClick: () => params.form.setValue(params.fieldKey, initialValue),
           }}
           className="w-8 h-8"
-          children={<IconNull />}
+          children={<IconPlus />}
         />
       )}
     </div>

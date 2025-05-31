@@ -14,7 +14,7 @@ export class Project {
   @Column({ nullable: true })
   description: string;
 
-  @ManyToOne(() => User, u => u.projects, { eager: false, onDelete: 'CASCADE',  })
+  @ManyToOne(() => User, u => u.projects, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ownerId' })
   @Exclude()
   owner: User;
