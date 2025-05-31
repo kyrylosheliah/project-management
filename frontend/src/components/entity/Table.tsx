@@ -14,7 +14,7 @@ import { IconChevronDown } from "../../ui/icons/ChevronDown";
 import { IconChevronLeft } from "../../ui/icons/ChevronLeft";
 import { IconChevronRight } from "../../ui/icons/ChevronRight";
 import { IconChevronUp } from "../../ui/icons/ChevronUp";
-import { IconEdit } from "../../ui/icons/IconEdit";
+import { IconEdit } from "../../ui/icons/Edit";
 import { IconMagnifier } from "../../ui/icons/Magnifier";
 import { IconPlus } from "../../ui/icons/Plus";
 import { IconTrashBin } from "../../ui/icons/TrashBin";

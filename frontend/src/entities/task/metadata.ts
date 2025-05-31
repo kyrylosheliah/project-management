@@ -14,7 +14,7 @@ export const TaskMetadata: EntityMetadata<
   fields: {
     id: { label: "Id", type: "key", constant: true },
     title: { label: "Title", type: "text" },
-    description: { label: "Description", type: "text", optional: true },
+    description: { label: "Description", type: "text", nullable: true },
     projectId: {
       label: "Project",
       type: "many_to_one",
@@ -23,7 +23,7 @@ export const TaskMetadata: EntityMetadata<
     assigneeId: {
       label: "Assignee",
       type: "many_to_one",
-      optional: true,
+      nullable: true,
       apiPrefix: "/user",
     },
     status: {

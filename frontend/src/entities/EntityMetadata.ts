@@ -26,7 +26,7 @@ export type EntityFieldMetadata = {
   type: DatabaseType;
   label: string;
   constant?: boolean;
-  optional?: boolean;
+  nullable?: boolean;
   apiPrefix?: keyof typeof EntityServiceRegistry;
   restrictedOptions?: object;
 };
@@ -45,10 +45,10 @@ export type DatabaseType =
   | "boolean"
   //| "char";
 
-export const getDefaultDBTypeValue = (
+export const fieldMetadataDefaultValue = (
   fieldMetadata: EntityFieldMetadata,
 ) => {
-  if (fieldMetadata.optional) {
+  if (fieldMetadata.nullable) {
     return null;
   }
   switch (fieldMetadata.type) {
@@ -60,5 +60,25 @@ export const getDefaultDBTypeValue = (
       return "";
     case "boolean":
       return false;
+    default:
+      return null;
+  }
+};
+
+
+export const fieldMetadataInitialValue = (
+  fieldMetadata: EntityFieldMetadata,
+) => {
+  switch (fieldMetadata.type) {
+    case "key":
+      return 0;
+    case "many_to_one":
+      return 0;
+    case "text":
+      return "";
+    case "boolean":
+      return false;
+    default:
+      return null;
   }
 };

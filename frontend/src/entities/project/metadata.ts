@@ -13,7 +13,7 @@ export const ProjectMetadata: EntityMetadata<
   fields: {
     id: { label: "Id", type: "key", constant: true },
     title: { label: "Title", type: "text" },
-    description: { label: "Description", type: "text", optional: true },
+    description: { label: "Description", type: "text", nullable: true },
     ownerId: {
       label: "Owner",
       type: "many_to_one",
