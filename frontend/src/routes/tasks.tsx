@@ -8,11 +8,7 @@ export const Route = createFileRoute('/tasks')({
   validateSearch: validateSearch,
 })
 
-function TasksPage() {
-  return <div>Hello "/tasks"!</div>
-}
-
-export default function ProjectsPage() {
+export default function TasksPage() {
   const search = useSearch({
     from: Route.fullPath,
     strict: true,

@@ -14,7 +14,8 @@ export const EntityForm = <
   edit?: boolean;
   onSubmit: (newFields: Omit<T, 'id'>) => void;
   entity: T;
-  service: EntityService<T, TSchema>,
+  service: EntityService<T, TSchema>;
+  breakPopover?: boolean;
 }) => {
   const metadata = params.service.metadata;
 
@@ -34,10 +35,9 @@ export const EntityForm = <
   const RootTag = params.edit ? "form" : "div";
 
   const onSubmit = params.edit
-    ? form.handleSubmit((newFields: Omit<T, 'id'>) => {
-        console.log("onSubmit");
-        params.onSubmit(newFields);
-      })
+    ? form.handleSubmit((newFields: Omit<T, "id">) =>
+        params.onSubmit(newFields)
+      )
     : undefined;
 
   return (
@@ -52,6 +52,7 @@ export const EntityForm = <
           form={form}
           fieldKey={key as any}
           service={params.service}
+          breakPopover={params.breakPopover}
         />
       ))}
       {params.edit && (

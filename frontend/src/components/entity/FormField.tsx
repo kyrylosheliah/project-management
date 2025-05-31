@@ -27,6 +27,7 @@ export const EntityFormField = <
   service: EntityService<T, TSchema>;
   form: UseFormReturn<EntityFormValues>;
   fieldKey: (keyof T) & (keyof TSchema) & Path<EntityFormValues>;
+  breakPopover?: boolean;
 }) => {
   const metadata = params.service.metadata;
 
@@ -44,11 +45,8 @@ export const EntityFormField = <
 
   const isDirty: boolean | undefined = useMemo(
     () => (params.form.formState.dirtyFields as any)[params.fieldKey],
-    [params.form.formState.dirtyFields]
+    [params.form.formState.dirtyFields, fieldValue]
   );
-  const initialValue = (params.form.formState.defaultValues !== undefined
-    && params.form.formState.defaultValues[params.fieldKey] as any)
-      || fieldMetadataInitialValue(fieldMetadata);
 
   return (
     <div>
@@ -66,10 +64,8 @@ export const EntityFormField = <
             {isDirty && (
               <ButtonText
                 props={{
-                  onClick: () => {
-                    params.form.setValue(params.fieldKey, initialValue);
-                    params.form.trigger();
-                  },
+                  onClick: () => params.form.resetField(params.fieldKey),
+                  className: "text-sm",
                 }}
               >
                 reset?
@@ -80,6 +76,7 @@ export const EntityFormField = <
                 props={{
                   onClick: () =>
                     params.form.setValue(params.fieldKey, null as any),
+                  className: "text-sm",
                 }}
               >
                 unset?
@@ -91,6 +88,7 @@ export const EntityFormField = <
       {params.edit ? (
         <EntityFieldControl
           fieldKey={params.fieldKey}
+          fieldValue={fieldValue}
           form={params.form}
           service={params.service}
         />
@@ -99,6 +97,7 @@ export const EntityFormField = <
           fieldKey={params.fieldKey}
           fieldValue={params.form.getValues(params.fieldKey)}
           service={params.service}
+          breakPopover={params.breakPopover}
         />
       )}
       {errors[params.fieldKey] && (
@@ -145,6 +144,7 @@ const EntityFieldControl = <
   EntityFormValues extends FieldValues,
 >(params: {
   fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
+  fieldValue: any;
   form: UseFormReturn<EntityFormValues>;
   service: EntityService<T, TSchema>;
 }) => {
@@ -165,7 +165,7 @@ const EntityFieldControl = <
   return (
     <div className="flex flex-row gap-4">
       {fieldValue !== null ? (
-        <EntityFieldInput {...params} />
+        <EntityFieldInput {...params} initialValue={initialValue} />
       ) : keyOrConst || fieldMetadata.nullable === false ? (
         <ButtonIcon
           className="w-6 h-6"
@@ -193,13 +193,15 @@ const EntityFieldInput = <
   EntityFormValues extends FieldValues,
 >(params: {
   fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
+  fieldValue: any;
   form: UseFormReturn<EntityFormValues>;
   service: EntityService<T, TSchema>;
+  initialValue: any;
 }) => {
   const errors = params.form.formState.errors;
   const isDirty: boolean | undefined = useMemo(
     () => (params.form.formState.dirtyFields as any)[params.fieldKey],
-    [params.form.formState.dirtyFields]
+    [params.form.formState.dirtyFields, params.fieldValue]
   );
   const commonClasses = useMemo(
     () =>
@@ -247,8 +249,10 @@ const EntityFieldInput = <
         <EntityFormFkInput
           commonClasses={commonClasses}
           fieldKey={params.fieldKey}
+          fieldValue={params.fieldValue}
           form={params.form}
           service={params.service}
+          initialValue={params.initialValue}
         />
       );
     case "enum":
@@ -259,7 +263,7 @@ const EntityFieldInput = <
           size={enumEntries.length}
           className={cx(
             commonClasses,
-            "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+            "bg-gray-50 border text-gray-900 text-sm rounded-lg block w-full p-2.5"
           )}
         >
           {enumEntries.map(([key, value]) => (
@@ -283,40 +287,24 @@ const EntityFormFkInput = <
   EntityFormValues extends FieldValues,
 >(params: {
   fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
+  fieldValue: any;
   form: UseFormReturn<EntityFormValues>;
   service: EntityService<T, TSchema>;
   commonClasses?: string;
+  initialValue: any;
 }) => {
   const fieldMetadata = params.service.metadata.fields[params.fieldKey];
-  const fieldValue = useWatch({
-    control: params.form.control,
-    name: params.fieldKey,
-  });
   const [searchParams, setSearchParams] =
     useState<SearchParams>(defaultSearchParams);
-  const [entityId, setEntityId] = useState<number | null>(fieldValue);
+  const [pickerEntityId, setPickerEntityId] = useState<number | undefined>(params.fieldValue);
   useEffect(() => {
-    console.log(
-      `many_to_one ${params.service.metadata.apiPrefix}[${params.fieldKey}]: entityId is ${entityId}`
-    );
-    params.form.setValue(params.fieldKey, entityId as any);
-  }, [entityId]);
+    if (pickerEntityId === undefined) {
+      params.form.setValue(params.fieldKey, params.initialValue);
+    } else {
+      params.form.setValue(params.fieldKey, pickerEntityId as any);
+    }
+  }, [pickerEntityId]);
   const [edit, setEdit] = useState<boolean>(false);
-
-  // icon?: ReactNode;
-  //   heading: ReactNode;
-  //   close: () => void;
-  //   pickerState?: [
-  //     number | null,
-  //     React.Dispatch<React.SetStateAction<number | null>>,
-  //   ];
-  //   searchParams: {
-  //     value: SearchParams;
-  //     set: (nextSearch: SearchParams) => void;
-  //   };
-  //   opened: boolean;
-  //   className?: string;
-
 
   return (
     <div className="flex flex-col gap-2">
@@ -324,19 +312,19 @@ const EntityFormFkInput = <
         opened={edit}
         heading={`Pick a(n) ${params.service.metadata.singular}`}
         close={() => setEdit(false)}
-        className="flex flex-col items-center justify-center backdrop-blur-sm bg-transparent"
+        className="flex flex-col items-center justify-center"
       >
         <EntityTable
           service={EntityServiceRegistry[fieldMetadata.apiPrefix!] as any}
           searchParams={{ value: searchParams, set: setSearchParams }}
-          pickerState={[entityId, setEntityId]}
+          pickerState={[pickerEntityId, setPickerEntityId]}
           className={params.commonClasses}
         />
       </Modal>
       <div className="flex flex-row gap-2">
         <EntityFieldDisplay
           fieldKey={params.fieldKey}
-          fieldValue={fieldValue}
+          fieldValue={params.fieldValue}
           service={params.service}
         />
         <ButtonIcon
@@ -345,14 +333,6 @@ const EntityFormFkInput = <
           props={{ onClick: () => setEdit((prev) => !prev) }}
         />
       </div>
-      {/* {edit && (
-        <EntityTable
-          service={EntityServiceRegistry[fieldMetadata.apiPrefix!] as any}
-          searchParams={{ value: searchParams, set: setSearchParams }}
-          pickerState={[entityId, setEntityId]}
-          className={params.commonClasses}
-        />
-      )} */}
     </div>
   );
 };

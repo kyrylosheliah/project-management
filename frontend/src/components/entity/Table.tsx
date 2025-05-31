@@ -28,8 +28,8 @@ export function EntityTable<
   TSchema extends z.ZodType<Omit<T, 'id'>>,
 >(params: {
   pickerState?: [
-    number | null,
-    React.Dispatch<React.SetStateAction<number | null>>,
+    number | undefined,
+    React.Dispatch<React.SetStateAction<number | undefined>>,
   ];
   relationFilter?: { key: string; value: any };
   service: EntityService<T, TSchema>;
@@ -48,7 +48,7 @@ export function EntityTable<
 
   const pagination: PaginationState = useMemo(() => ({
     pageIndex: sourceParameters.pageNo - 1,
-    pageSize: sourceParameters.pageSize || 10,
+    pageSize: sourceParameters.pageSize,
   }), [sourceParameters.pageNo, sourceParameters.pageSize]);
 
   const [optimisticSorting, setOptimisticSorting] = useState<SortingState>(() => [{
@@ -57,17 +57,24 @@ export function EntityTable<
   }]);
 
   useEffect(() => {
-    const newSorting = [{
-      id: sourceParameters.orderByColumn,
-      desc: !sourceParameters.ascending,
-    }];
+    const newSorting = [
+      {
+        id: sourceParameters.orderByColumn,
+        desc: !sourceParameters.ascending,
+      },
+    ];
     setOptimisticSorting(newSorting);
   }, [sourceParameters.orderByColumn, sourceParameters.ascending]);
 
-  const sorting: SortingState = useMemo(() => [{
-    id: sourceParameters.orderByColumn,
-    desc: !sourceParameters.ascending,
-  },],[sourceParameters.pageNo, sourceParameters.ascending]);
+  const sorting: SortingState = useMemo(
+    () => [
+      {
+        id: sourceParameters.orderByColumn,
+        desc: !sourceParameters.ascending,
+      },
+    ],
+    [sourceParameters.pageNo, sourceParameters.ascending]
+  );
 
   const [globalFilter, setGlobalFilter] = useState<string>("");
 
@@ -136,7 +143,7 @@ export function EntityTable<
   const navigate = useNavigate();
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(
-    params.pickerState !== undefined && params.pickerState[0] !== null
+    params.pickerState !== undefined && params.pickerState[0] !== undefined
       ? {
           [params.pickerState[0]]: true,
         }
@@ -146,13 +153,14 @@ export function EntityTable<
   const [selectedRowId, setSelectedRowId] =
     params.pickerState !== undefined
       ? params.pickerState
-      : useState<number | null>(null);
+      : useState<number | undefined>(undefined);
 
   useEffect(() => {
-    console.log("rowSelection", rowSelection);
     const selectedRows = entities.filter((row) => rowSelection[row.id]);
-    if (selectedRows.length) {
+    if (selectedRows.length > 0) {
       setSelectedRowId(selectedRows[0].id);
+    } else {
+      setSelectedRowId(undefined);
     }
   }, [rowSelection]);
 
@@ -160,17 +168,19 @@ export function EntityTable<
   if (params.edit || params.pickerState) {
     columns.push({
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
+      header: ({ table }) => {
+        const allSelected = table.getIsAllRowsSelected();
+        const someSelected = table.getIsSomeRowsSelected() || allSelected;
+        return (<Checkbox
           attributes={{
-            disabled: !table.getIsSomeRowsSelected(),
-            checked: table.getIsAllRowsSelected(),
+            disabled: !someSelected,
+            checked: allSelected,
             onChange: () => {},
             onClick: () => table.resetRowSelection(),
           }}
-          indeterminate={table.getIsSomeRowsSelected()}
-        />
-      ),
+          indeterminate={someSelected}
+        />);
+      },
       cell: ({ row }) => (
         <Checkbox
           attributes={{
@@ -255,28 +265,32 @@ export function EntityTable<
       )}
     >
       <div className="w-full h-8 gap-2 flex flex-row justify-between items-center">
-        <EntityModalForm
-          opened={createOpened}
-          heading={`Edit ${metadata.singular}`}
-          close={() => setCreateOpened(false)}
-          create={(newValues) =>
-            createMutation.mutateAsync(newValues, {
-              onSuccess: () => setCreateOpened(false),
-            })
-          }
-          entityId={selectedRowId}
-          service={service}
-        />
-        <ButtonIcon
-          className="w-8 h-8"
-          props={{
-            disabled: isPending,
-            onClick: () => setCreateOpened(true),
-          }}
-        >
-          <IconPlus />
-        </ButtonIcon>
-        {table.getIsSomeRowsSelected() && (
+        {params.edit === true && (
+          <>
+            <EntityModalForm
+              opened={createOpened}
+              heading={`Edit ${metadata.singular}`}
+              close={() => setCreateOpened(false)}
+              create={(newValues) =>
+                createMutation.mutateAsync(newValues, {
+                  onSuccess: () => setCreateOpened(false),
+                })
+              }
+              entityId={selectedRowId}
+              service={service}
+            />
+            <ButtonIcon
+              className="w-8 h-8"
+              props={{
+                disabled: isPending,
+                onClick: () => setCreateOpened(true),
+              }}
+            >
+              <IconPlus />
+            </ButtonIcon>
+          </>
+        )}
+        {params.edit === true && !!selectedRowId && (
           <>
             <EntityModalForm
               opened={updateOpened}
@@ -296,17 +310,15 @@ export function EntityTable<
             >
               <IconEdit />
             </ButtonIcon>
-            {selectedRowId !== null && (
-              <ButtonIcon
-                className="w-8 h-8"
-                type="danger"
-                props={{
-                  onClick: () => deleteMuatation.mutateAsync(selectedRowId),
-                }}
-              >
-                <IconTrashBin />
-              </ButtonIcon>
-            )}
+            <ButtonIcon
+              className="w-8 h-8"
+              type="danger"
+              props={{
+                onClick: () => deleteMuatation.mutateAsync(selectedRowId),
+              }}
+            >
+              <IconTrashBin />
+            </ButtonIcon>
           </>
         )}
         <input
@@ -415,7 +427,7 @@ const EntityModalForm = <
   close: () => void;
   update?: (id: number, newValues: Omit<T, 'id'>) => Promise<boolean>;
   create?: (newValues: Omit<T, 'id'>) => Promise<boolean>;
-  entityId: number | null;
+  entityId: number | undefined;
   service: EntityService<T, TSchema>;
 }) => {
   const { data, isPending, isSuccess } = params.service.useGet(
@@ -427,7 +439,7 @@ const EntityModalForm = <
       icon={params.icon}
       heading={params.heading}
       close={params.close}
-      className="flex flex-col items-center justify-center backdrop-blur-sm bg-transparent"
+      className="flex flex-col items-center justify-center"
     >
       {params.create === undefined ? (
         isPending ? (

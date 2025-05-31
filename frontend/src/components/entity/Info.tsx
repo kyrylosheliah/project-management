@@ -29,9 +29,13 @@ export const EntityInfo = <
 
   const updateMutation = service.useUpdate();
 
+  const deleteMutation = service.useDelete(() => {
+    router.navigate({ to: metadata.apiPrefix + "s" });
+  });
+
   return (
     <div className="flex flex-col md:flex-row md:max-w-screen-lg md:w-auto">
-      <div className="flex flex-col justify-start items-center p-8 p-t-4 border-gray-300 border-b md:border-b-0 md:border-r">
+      <div className="flex flex-col justify-start items-center p-8 p-t-4 border-b md:border-b-0 md:border-r">
         {isPending || data === undefined ? (
           loadingElement
         ) : (
@@ -80,7 +84,7 @@ export const EntityInfo = <
                 <ButtonText
                   type="danger"
                   props={{
-                    onClick: () => service.delete(data.id),
+                    onClick: () => deleteMutation.mutate(data.id),
                     className: "self-end",
                   }}
                 >
@@ -91,20 +95,27 @@ export const EntityInfo = <
           </>
         )}
       </div>
-      <div className="w-full">
+      <div className="w-full p-4">
         {metadata.relations &&
           metadata.relations.length &&
           metadata.relations.map((relation) => {
             const [searchParams, setSearchParams] =
               useState<SearchParams>(defaultSearchParams);
             return (
-              <EntityTable
-                traverse
-                key={`relation_${relation.label}`}
-                searchParams={{ value: searchParams, set: setSearchParams }}
-                service={EntityServiceRegistry[relation.apiPrefix] as any}
-                edit
-              />
+              <div>
+                <h2 className="mb-4 text-xl fw-600">{relation.label}</h2>
+                <EntityTable
+                  traverse
+                  key={`relation_${relation.label}`}
+                  searchParams={{ value: searchParams, set: setSearchParams }}
+                  service={EntityServiceRegistry[relation.apiPrefix] as any}
+                  relationFilter={{
+                    key: relation.fkField,
+                    value: params.entityId,
+                  }}
+                  edit
+                />
+              </div>
             );
           })}
       </div>

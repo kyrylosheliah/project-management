@@ -87,7 +87,7 @@ export default class EntityService<
         queryClient.invalidateQueries({
           queryKey: [this.metadata.apiPrefix, "search"],
         });
-        alert(`${this.metadata.singular} was successfully created`);
+        alert(`A ${this.metadata.singular} was successfully created`);
         onSuccess?.();
       },
     });
@@ -105,7 +105,7 @@ export default class EntityService<
         queryClient.invalidateQueries({
           queryKey: [this.metadata.apiPrefix, "get", variables.id],
         });
-        alert(`${this.metadata.singular} was successfully updated`);
+        alert(`The ${this.metadata.singular} was successfully updated`);
         onSuccess?.();
       },
     });
@@ -123,7 +123,7 @@ export default class EntityService<
         queryClient.invalidateQueries({
           queryKey: [this.metadata.apiPrefix, "get", variables],
         });
-        alert(`${this.metadata.singular} was successfully deleted`);
+        alert(`The ${this.metadata.singular} was successfully deleted`);
         onSuccess?.();
       },
     });

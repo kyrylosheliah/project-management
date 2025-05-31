@@ -42,15 +42,14 @@ npm run dev
 ## Drawing board / TODOs
 
 Must:
-- Fix reset function per form field
 - Column width for long text entity field displaying
 - DTO request validation
 - SOLID, KISS, folder structure
 - Handle backend database querying exceptions
 - Handle database search comparison per field type
+- Bind mutations to current entity info page entity id
 
 Could:
-- EntityFieldDisplay full entity info and link popup on hover
 - @nestjs/jwt auth
 - TanStack Query params for pagination and filtering
 - Decorators for role-based access control

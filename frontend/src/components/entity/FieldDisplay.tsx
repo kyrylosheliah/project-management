@@ -7,6 +7,11 @@ import ButtonIcon from "../../ui/ButtonIcon";
 import { BadgeIcon } from "../../ui/BadgeIcon";
 import { IconNull } from "../../ui/icons/Null";
 import type { FieldValues, Path } from "react-hook-form";
+import { Popover } from "../../ui/Popover";
+import { useState } from "react";
+import { EntityForm } from "./Form";
+import { useRouter } from "@tanstack/react-router";
+import { IconLink } from "../../ui/icons/Link";
 
 export const EntityFieldDisplay = <
   T extends Entity,
@@ -16,6 +21,7 @@ export const EntityFieldDisplay = <
   fieldKey: (keyof EntityFormValues) & (keyof T) & Path<EntityFormValues>;
   fieldValue: any;
   service: EntityService<T, TSchema>;
+  breakPopover?: boolean;
 }) => {
   const fieldMetadata = params.service.metadata.fields[params.fieldKey]
   if (fieldMetadata.nullable) {
@@ -38,7 +44,13 @@ export const EntityFieldDisplay = <
     case "text":
       return params.fieldValue;
     case "fkey":
-      return <EntityFkField fkId={params.fieldValue} fieldMetadata={fieldMetadata} />;
+      return (
+        <EntityFkField
+          fkId={params.fieldValue}
+          fieldMetadata={fieldMetadata}
+          breakPopover={params.breakPopover}
+        />
+      );
     case "enum":
       return (
         (fieldMetadata.enum!.options as any)[params.fieldValue] ||
@@ -52,13 +64,14 @@ export const EntityFieldDisplay = <
 const EntityFkField = (params: {
   fkId: string | number;
   fieldMetadata: EntityFieldMetadata;
+  breakPopover?: boolean;
 }) => {
+  const router = useRouter();
   if (params.fkId === 0) {
     return (
       <BadgeIcon
         className="fw-700"
-        children={<div className="pr-2">...</div>}
-        icon={ <div className="flex justify-center items-center">?</div> }
+        children={<div className="px-2">unspecified</div>}
       />
     );
   }
@@ -66,9 +79,41 @@ const EntityFkField = (params: {
   const fkMetadata = fkService.metadata;
   const { data, isPending } = fkService.useGet(params.fkId);
   const loadingElement = <div>...</div>;
+  const [popoverOpen, setPopoverOpen] = useState<boolean>(false);
   return isPending || data === undefined ? (
     loadingElement
+  ) : params.breakPopover ? (
+    fkMetadata.peekComponent(data as any)
   ) : (
-    <div>{fkMetadata.peekComponent(data as any)}</div>
+    <Popover
+      hover
+      stickyParent
+      controlled={[popoverOpen, setPopoverOpen]}
+      coord={{ x: "center", y: "end" }}
+      target={fkMetadata.peekComponent(data as any)}
+      popover={
+        <div className="z-20 inline-block bg-white border rounded-md shadow-md flex flex-row items-start">
+          <div className="py-4 pl-4">
+            <EntityForm
+              edit={false}
+              entity={data as any}
+              onSubmit={() => {}}
+              service={fkService as any}
+              breakPopover
+            />
+          </div>
+          <ButtonIcon
+            children={<IconLink />}
+            props={{
+              className: "mr-1 mt-1",
+              onClick: () =>
+                router.navigate({
+                  to: `${fkMetadata.apiPrefix}/${params.fkId}`,
+                }),
+            }}
+          />
+        </div>
+      }
+    />
   );
 };

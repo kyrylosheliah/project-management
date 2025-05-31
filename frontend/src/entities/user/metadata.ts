@@ -17,12 +17,12 @@ export const UserMetadata: EntityMetadata<
   },
   relations: [
     {
-      label: "Managing Projects",
+      label: "Manages Projects",
       apiPrefix: "/project",
       fkField: "ownerId",
     },
     {
-      label: "Assigned Projects",
+      label: "Assigned Tasks",
       apiPrefix: "/task",
       fkField: "assigneeId",
     },
