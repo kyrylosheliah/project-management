@@ -1,8 +1,8 @@
 import { DataSource, DataSourceOptions } from "typeorm";
 import 'dotenv/config';
-import { User } from "./data/user/user.entity";
-import { Project } from "./data/project/project.entity";
-import { Task } from "./data/task/task.entity";
+import { User } from "./modules/user/user.entity";
+import { Project } from "./modules/project/project.entity";
+import { Task } from "./modules/task/task.entity";
 
 export const databaseOptions = {
   type: 'postgres',

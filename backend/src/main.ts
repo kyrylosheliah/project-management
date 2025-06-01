@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { version } from 'package.json';
 import { ValidationPipe } from '@nestjs/common';
+import { GlobalExceptionFilter } from 'src/common/filters/global-exception.filter';
 
 const documentConfig = new DocumentBuilder()
   .setTitle("Project Management API")
@@ -30,6 +31,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   console.log(`starting nestjs at port ${port} ...`);
 

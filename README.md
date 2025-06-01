@@ -22,7 +22,8 @@ PG_NAME=ProjectManagement
 cd backend
 npm i
 npm run typeorm migration:run
-npm run start:dev
+npm run build
+npm run start
 ```
 
 ### Frontend
@@ -36,28 +37,24 @@ VITE_BACKEND_URL=http://localhost:3000
 ```
 cd frontend
 npm i
-npm run dev
+npm run build
+npm run start
 ```
 
 ## Drawing board / TODOs
 
 Must:
-- Column width for long text entity field displaying
-- DTO request validation
-- SOLID, KISS, folder structure
-- Handle backend database querying exceptions
-- Handle database search comparison per field type
 - Bind mutations to current entity info page entity id
+- Extract component contexts to eliminate parameter passing
+- Uncontrolled entity table search parameters state and initial merging
 
 Could:
 - @nestjs/jwt auth
-- TanStack Query params for pagination and filtering
 - Decorators for role-based access control
 - docker-compose deployment
 - CI pipeline
-- Filtering dictionary object (search fields with column name dropdown)
-- Sorting dictionary object (every column retains sorting chevron state)
-- External search parameters state merge solution
 
 Exploration:
 - Project-wide schema defined via OpenAPI Specification
+- Filtering dictionary object (search fields with column name dropdown)
+- Sorting dictionary object (every column retains sorting chevron state)

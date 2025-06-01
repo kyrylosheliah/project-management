@@ -1,21 +1,24 @@
-import * as React from 'react'
-import { Outlet, createRootRoute, type ErrorComponentProps } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { Outlet, createRootRoute, type ErrorComponentProps } from '@tanstack/react-router';
+import { NavigationHeader } from '../components/NavigationHeader';
 
 export const Route = createRootRoute({
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
-})
+});
 
 function RootComponent() {
   return (
-    <React.Fragment>
-      <div>Hello "__root"!</div>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </React.Fragment>
-  )
+    <>
+      <NavigationHeader />
+      <div className="flex flex-col items-center justify-start w-full">
+        <div className="max-w-4xl w-full pt-4 px-4">
+          <Outlet />
+        </div>
+      </div>
+      {/* <TanStackRouterDevtools /> */}
+    </>
+  );
 }
 
 function NotFoundComponent() {
